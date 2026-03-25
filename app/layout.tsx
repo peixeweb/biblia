@@ -45,8 +45,34 @@ export default function RootLayout({
             />
           </>
         )}
+
+        {/* Google Tag Manager */}
+        {process.env.NEXT_PUBLIC_GTM_ID && (
+          <script
+            dangerouslySetInnerHTML={{
+              __html: `
+                (function(w,d,s,l,i){w[l]=w[l]||[];w[l].push({'gtm.start':
+                new Date().getTime(),event:'gtm.js'});var f=d.getElementsByTagName(s)[0],
+                j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
+                'https://www.googletagmanager.com/gtm.js?id='+i+dl;f.parentNode.insertBefore(j,f);
+                })(window,document,'script','dataLayer','${process.env.NEXT_PUBLIC_GTM_ID}');
+              `,
+            }}
+          />
+        )}
       </head>
       <body className="flex flex-col min-h-screen">
+        {/* Google Tag Manager (noscript) */}
+        {process.env.NEXT_PUBLIC_GTM_ID && (
+          <noscript>
+            <iframe
+              src={`https://www.googletagmanager.com/ns.html?id=${process.env.NEXT_PUBLIC_GTM_ID}`}
+              height="0"
+              width="0"
+              style={{ display: "none", visibility: "hidden" }}
+            />
+          </noscript>
+        )}
         <header style={{ display: "flex", justifyContent: "center", alignItems: "center", padding: "10px", backgroundColor: "#ffffff", boxShadow: "0 2px 4px rgba(0,0,0,0.1)", zIndex: 1000, position: "relative" }}>
           <span style={{ marginRight: "10px", fontSize: "14px", fontWeight: 500, color: "#333", fontFamily: "'Inter', sans-serif" }}>Desenvolvido por</span>
           <a href="https://peixeweb.github.io/vendas_pela_internet/" target="_blank" rel="noopener noreferrer" style={{ display: "flex", alignItems: "center" }}>
