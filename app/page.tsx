@@ -1,4 +1,3 @@
-/* app/page.tsx */
 "use client";
 import React, { useState, useEffect, useRef } from "react";
 import { biblicalFigures, BiblicalFigure } from "../lib/data";
@@ -18,13 +17,11 @@ export default function Home() {
   const [currentQuery, setCurrentQuery] = useState("");
   const resultRef = useRef<HTMLDivElement>(null);
 
-  // Estados reais do Supabase
   const [totalSearches, setTotalSearches] = useState(0);
   const [totalTopics, setTotalTopics] = useState(0);
   const [totalVerses, setTotalVerses] = useState(0);
 
   useEffect(() => {
-    // Busca inicial
     const fetchStats = async () => {
       const { data } = await supabase.from('statistics').select('*').eq('id', 1).single();
       if (data) {
@@ -35,7 +32,6 @@ export default function Home() {
     };
     fetchStats();
 
-    // Inscrição em tempo real
     const channel = supabase.channel('realtime_stats')
       .on('postgres_changes', { event: 'UPDATE', schema: 'public', table: 'statistics', filter: 'id=eq.1' }, (payload) => {
         if (payload.new) {
@@ -69,7 +65,6 @@ export default function Home() {
     setIsSearching(true);
     setSearchKey(prev => prev + 1);
     
-    // Atualização otimista
     setTotalSearches(prev => prev + 1);
     setTotalTopics(prev => prev + 1);
 
@@ -97,12 +92,10 @@ export default function Home() {
 
   return (
     <main className="container">
-      {/* SEO E-E-A-T: H1 estrutural com palavra-chave principal */}
       <h1 className="sr-only" style={{ position: 'absolute', width: '1px', height: '1px', padding: '0', margin: '-1px', overflow: 'hidden', clip: 'rect(0,0,0,0)', border: '0' }}>
         Reflexão Bíblica Acadêmica - Estudos Profundos sobre a BÍBLIA e Exegese
       </h1>
 
-      {/* JSON-LD para Google Search (E-E-A-T) */}
       <script
         type="application/ld+json"
         dangerouslySetInnerHTML={{
@@ -179,7 +172,6 @@ export default function Home() {
   );
 }
 
-/* Componente para renderizar a resposta da IA em markdown */
 function AIResponseView({ response, query }: { response: string; query: string }) {
   const renderMarkdown = (md: string) => {
     let html = md

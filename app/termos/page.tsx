@@ -27,7 +27,7 @@ export default function TermosPage() {
         <section className="mb-8">
           <h2 className="text-2xl font-semibold mb-4">2. Licença de Uso</h2>
           <p>
-            O conteúdo aqui apresentado, focado em estudos da <strong>BÍBLIA</strong> sob uma perspectiva de exegese, linguística e história, é para fins informativos e acadêmicos. É concedida permissão para baixar temporariamente uma cópia dos materiais para visualização pessoal e não comercial.
+            O conteúdo aqui apresentado, focado em estudos da <strong>BÍBLIA</strong> sob uma perspective de exegese, linguística e história, é para fins informativos e acadêmicos. É concedida permissão para baixar temporariamente uma cópia dos materiais para visualização pessoal e não comercial.
           </p>
         </section>
 
