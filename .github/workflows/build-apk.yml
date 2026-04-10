@@ -42,9 +42,14 @@ jobs:
             -keyalg RSA \
             -keysize 2048
 
+      - name: Configure Bubblewrap
+        run: |
+          mkdir -p ~/.bubblewrap
+          echo "{\"jdkPath\":\"${JAVA_HOME}\",\"androidSdkPath\":\"${ANDROID_HOME}\"}" > ~/.bubblewrap/config.json
+
       - name: Initialize Bubblewrap project
         run: |
-          yes | bubblewrap init \
+          bubblewrap init \
             --manifest=https://biblia-five-kappa.vercel.app/manifest.json \
             --directory=./android-app
         env:
