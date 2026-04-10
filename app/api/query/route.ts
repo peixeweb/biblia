@@ -73,7 +73,7 @@ export async function POST(request: NextRequest) {
       ],
       model: "llama-3.3-70b-versatile",
       temperature: 0.7,
-      max_completion_tokens: 4096,
+      max_tokens: 4096,
     });
 
     let responseText = chatCompletion.choices[0]?.message?.content || "Sem resposta.";
@@ -86,14 +86,18 @@ export async function POST(request: NextRequest) {
       responseText = responseText.replace(imageMatch[0], "").trim();
     }
 
-    // Atualiza o painel de impacto global no banco (não atrasa a resposta ao usuário)
+    // Atualiza o painel de impacto global no banco
     const verseCount = Math.floor(Math.random() * 3) + 2;
-    supabase.rpc('increment_stats', { temas_count: 1, versiculos_count: verseCount }).then();
+    supabase.rpc('increment_stats', { temas_count: 1, versiculos_count: verseCount })
+      .then(({ error }) => {
+        if (error) console.error("Erro ao atualizar estatísticas:", error);
+      })
+      .catch(err => console.error("Falha na chamada RPC do Supabase:", err));
 
     return NextResponse.json({ response: responseText, imageQuery });
-  } catch (error: unknown) {
-    console.error("Erro na API Groq:", error);
-    const message = error instanceof Error ? error.message : "Erro desconhecido";
+  } catch (error: any) {
+    console.error("Erro na API Groq/Supabase:", error);
+    const message = error?.message || "Erro desconhecido";
     return NextResponse.json({ error: `Erro ao consultar: ${message}` }, { status: 500 });
   }
 }

@@ -1,0 +1,22 @@
+{
+  "name": "Pesquisa Bíblica",
+  "short_name": "Bíblia",
+  "description": "Estudo Profundo e Sem Viés. Análise Completa de Contexto.",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#000000",
+  "theme_color": "#d4af37",
+  "icons": [
+    {
+      "src": "/icon-192x192.png",
+      "sizes": "192x192",
+      "type": "image/png"
+    },
+    {
+      "src": "/icon-512x512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any maskable"
+    }
+  ]
+}
