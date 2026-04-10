@@ -44,7 +44,7 @@ jobs:
 
       - name: Initialize Bubblewrap project
         run: |
-          bubblewrap init \
+          yes | bubblewrap init \
             --manifest=https://biblia-five-kappa.vercel.app/manifest.json \
             --directory=./android-app
         env:
