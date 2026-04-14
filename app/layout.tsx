@@ -1,4 +1,5 @@
 import { ServiceWorkerRegistration } from "../components/ServiceWorkerRegistration";
+import { InstallPrompt } from "../components/InstallPrompt";
 
 export const metadata = {
   title: "Pesquisa Bíblica",
@@ -18,6 +19,7 @@ export default function RootLayout({
       </head>
       <body>
         <ServiceWorkerRegistration />
+        <InstallPrompt />
         {children}
       </body>
     </html>
