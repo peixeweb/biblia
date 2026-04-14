@@ -1,207 +1,154 @@
 "use client";
-import React, { useState, useEffect, useRef } from "react";
-import { biblicalFigures, BiblicalFigure } from "../lib/data";
-import { QueryInput } from "../components/QueryInput";
-import { FigureView } from "../components/FigureView";
-import { ImpactChart } from "../components/ImpactChart";
-import { TopicImage } from "../components/TopicImage";
-import { supabase } from "../lib/supabase";
+import { useState } from "react";
+
+const questions = [
+  { id: 1, question: "Qual foi o primeiro milagre de Jesus?", options: ["Multiplicar pães e peixes", "Curar um cego", "Transformar água em vinho", "Andar sobre as águas"], answer: 2 },
+  { id: 2, question: "Quem foi o Pai da fé?", options: ["Abraão", "Moisés", "Davi", "Paulo"], answer: 0 },
+  { id: 3, question: "Quantos princípios tem o Credo de Niceia?", options: ["7", "8", "9", "10"], answer: 1 },
+  { id: 4, question: "O que é a Shekinah?", options: ["Um anjo", "A presença de Deus", "Um demônio", "Um objeto sagrado"], answer: 1 },
+  { id: 5, question: "Qual livro da Biblia tem mais Salmos?", options: ["Salmos", "Isaías", "Gênesis", "Êxodo"], answer: 0 },
+  { id: 6, question: "Quantas espécies de animais habían na arca de Noé?", options: ["2 de cada", "7 de cada", "Indefinido", "Nenhuma"], answer: 0 },
+  { id: 7, question: "Quantos livros tem o Novo testamento?", options: ["27", "30", "40", "50"], answer: 0 },
+  { id: 8, question: "O que significa 'Jeová'?", options: ["O Salvador", "O Eterno", "O Poderoso", "O Rei"], answer: 1 },
+  { id: 9, question: "Qual o primeiro livro da Biblia?", options: ["Gênesis", "Êxodo", "Levítico", "Números"], answer: 0 },
+  { id: 10, question: "O que é o 'Konós'?", options: ["Uma lei", "Uma ordem", "Uma doença", "Umohan"], answer: 3 },
+  { id: 11, question: "Quem escreveu o Salmo 23?", options: ["Davi", "Salomão", "Moisés", "Isaías"], answer: 0 },
+  { id: 12, question: "O que é a 'Torá'?", options: ["Os primeiros 5 livros", "O evangelho", "As cartas", "O Apocalipse"], answer: 0 },
+  { id: 13, question: "Qual a lingua original do Novo testamento?", options: ["Latim", "Grego", "Hebraico", "Aramaico"], answer: 1 },
+  { id: 14, question: "O que é 'Messias'?", options: ["Profeta", "Rei ungido", "Sacerdote", "Anjo"], answer: 1 },
+  { id: 15, question: "Quantos anos Jesus viveu?", options: ["30 anos", "33 anos", "35 anos", "40 anos"], answer: 1 },
+  { id: 16, question: "O que é a Eucaristia?", options: ["Um sacramento", "Uma oração", "Um jejum", "Uma festa"], answer: 0 },
+  { id: 17, question: "Quantos dias durou odilúvio?", options: ["30", "40", "50", "60"], answer: 1 },
+  { id: 18, question: "Quem foi o primeiro homem?", options: ["Adão", "Abel", "Noé", "Enoc"], answer: 0 },
+  { id: 19, question: "O que significa 'Aleluia'?", options: ["Deus太好了", "Povo de Deus", "Louvai ao Senhor", "Amém"], answer: 2 },
+  { id: 20, question: "Qual livro começa com 'No princípio'?", options: ["Êxodo", "Gênesis", "Levítico", "Números"], answer: 1 },
+  { id: 21, question: "Quantas pragas teve no Egito?", options: ["7", "9", "10", "12"], answer: 2 },
+  { id: 22, question: "O que é o Shabat?", options: ["Um jejum", "Um dia santo", "Uma festa", "Uma oração"], answer: 1 },
+  { id: 23, question: "Quantos mandamentos existem?", options: ["7", "8", "9", "10"], answer: 3 },
+  { id: 24, question: "Quem cantou para as aguas do mar vermelho?", options: ["Davi", "Moisés", "Aarão", "Josué"], answer: 1 },
+  { id: 25, question: "O que é o 'Pão da Presença'?", options: ["Pão comum", "Pão da proposição", "Pão ázimo", "Pão sagrado"], answer: 1 },
+  { id: 26, question: "O que é a 'Glória de Deus'?", options: ["O templo", "A Shekinah", "O credo", "A biblia"], answer: 1 },
+  { id: 27, question: "Qual anjo anunciou o nascimento de Jesus?", options: ["Gabriel", "Miguel", "Rafael", "Uriel"], answer: 0 },
+  { id: 28, question: "O que é o 'Cálice'?", options: ["Um prato", "Uma taça", "Um kalice", "Um objeto"], answer: 1 },
+  { id: 29, question: "Qual o livro mais curto da Biblia?", options: ["Filémon", "Judas", "2 João", "Todas"], answer: 3 },
+  { id: 30, question: "O que é 'Evangelho'?", options: ["Uma historia", "Boas novas", "Um salmo", "Uma lei"], answer: 1 },
+  { id: 31, question: "Quantos profetas mayores ha?", options: ["4", "5", "6", "7"], answer: 1 },
+  { id: 32, question: "O que é 'Apocalipse'?", options: ["Revelação", "Destruição", "Criação", "Paz"], answer: 0 },
+  { id: 33, question: "Quem foi decapitado?", options: ["João Batista", "Pedro", "Paulo", "Estêvão"], answer: 0 },
+  { id: 34, question: "Quantas этаvas de fé ha?", options: ["3", "5", "7", "9"], answer: 2 },
+  { id: 35, question: "O que é a 'Graça'?", options: ["Um dom", "Um pecado", "Uma lei", "Uma obra"], answer: 0 },
+  { id: 36, question: "Em que lingua foi escrito o'Antigo testamento'?", options: ["Grego", "Latim", "Hebraico", "Aramaico"], answer: 2 },
+  { id: 37, question: "O que é a 'Fé'?", options: ["Crença", "Dúvida", "Sabença", "Poder"], answer: 0 },
+  { id: 38, question: "Quantos livros tem a Biblia?", options: ["46", "60", "66", "73"], answer: 2 },
+  { id: 39, question: "Quem foi o último rei de Israel?", options: ["Saul", "Davi", "Salomão", "Oséias"], answer: 2 },
+  { id: 40, question: "O que é 'Satanás'?", options: ["Um demônio", "Um anjo caído", "Um falso deus", "Um homem"], answer: 1 },
+  { id: 41, question: "Quantos filhos Jacó teve?", options: ["10", "11", "12", "13"], answer: 2 },
+  { id: 42, question: "O que é o 'Batismo'?", options: ["Casamento", "Unção", "Mergulho", "Sacramento"], answer: 2 },
+  { id: 43, question: "Quantos livros tem o Pentateuco?", options: ["5", "6", "7", "8"], answer: 0 },
+  { id: 44, question: "Quem compôs o hino 'Amazing Grace'?", options: ["John Newton", "Charles Wesley", "Martin Luther", "Isaac Watts"], answer: 0 },
+  { id: 45, question: "O que é a 'Cruz'?", options: ["Um símbolo", "Um martírio", "O instrumento da salvação", "Uma arma"], answer: 2 },
+  { id: 46, question: "Quantos Salmos são?", options: ["50", "100", "150", "200"], answer: 2 },
+  { id: 47, question: "O que é o 'Espírito Santo'?", options: ["Um poder", "Uma pessoa", "Uma força", "Um anjo"], answer: 1 },
+  { id: 48, question: "Qual o primeiro milagre de Jesus?", options: ["Curar um paralítico", "Multiplicar pães", "Curar um cego", "Andar sobre as águas"], answer: 1 },
+  { id: 49, question: "O que é a 'Ressurreição'?", options: ["Morte", "Vida após a morte", "Nascimento", "Casamento"], answer: 1 },
+  { id: 50, question: "Quantas mulheres acompañaron aJesus?", options: ["1", "2", "3", "Nenhuma"], answer: 3 },
+];
 
 export default function Home() {
-  const [selectedFigure, setSelectedFigure] = useState<BiblicalFigure | null>(null);
-  const [isSearching, setIsSearching] = useState(false);
-  const [aiResponse, setAiResponse] = useState<string | null>(null);
-  const [aiError, setAiError] = useState<string | null>(null);
-  const [imageQuery, setImageQuery] = useState<string | null>(null);
-  const [searchKey, setSearchKey] = useState(0);
-  const [currentQuery, setCurrentQuery] = useState("");
-  const resultRef = useRef<HTMLDivElement>(null);
+  const [currentQuestion, setCurrentQuestion] = useState(0);
+  const [score, setScore] = useState(0);
+  const [showScore, setShowScore] = useState(false);
+  const [selectedAnswer, setSelectedAnswer] = useState<number | null>(null);
+  const [showResult, setShowResult] = useState(false);
 
-  const [totalSearches, setTotalSearches] = useState(0);
-  const [totalTopics, setTotalTopics] = useState(0);
-  const [totalVerses, setTotalVerses] = useState(0);
-
-  useEffect(() => {
-    const fetchStats = async () => {
-      const { data } = await supabase.from('statistics').select('*').eq('id', 1).single();
-      if (data) {
-        setTotalSearches(data.total_consultas);
-        setTotalTopics(data.total_temas);
-        setTotalVerses(data.total_versiculos);
-      }
-    };
-    fetchStats();
-
-    const channel = supabase.channel('realtime_stats')
-      .on('postgres_changes', { event: 'UPDATE', schema: 'public', table: 'statistics', filter: 'id=eq.1' }, (payload) => {
-        if (payload.new) {
-          setTotalSearches(payload.new.total_consultas);
-          setTotalTopics(payload.new.total_temas);
-          setTotalVerses(payload.new.total_versiculos);
-        }
-      })
-      .subscribe();
-
-    return () => {
-      supabase.removeChannel(channel);
-    };
-  }, []);
-
-  useEffect(() => {
-    setSelectedFigure(biblicalFigures[0]);
-  }, []);
-
-  useEffect(() => {
-    if ((aiResponse || isSearching) && resultRef.current) {
-      resultRef.current.scrollIntoView({ behavior: "smooth", block: "start" });
-    }
-  }, [aiResponse, isSearching]);
-
-  const handleGlobalSearch = async (query: string) => {
-    setAiResponse(null);
-    setAiError(null);
-    setImageQuery(null);
-    setCurrentQuery(query);
-    setIsSearching(true);
-    setSearchKey(prev => prev + 1);
+  const handleAnswer = (optionIndex: number) => {
+    setSelectedAnswer(optionIndex);
+    setShowResult(true);
     
-    setTotalSearches(prev => prev + 1);
-    setTotalTopics(prev => prev + 1);
-
-    try {
-      const res = await fetch("/api/query", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ query }),
-      });
-
-      const data = await res.json();
-
-      if (!res.ok) {
-        setAiError(data.error || "Erro desconhecido.");
-      } else {
-        setAiResponse(data.response);
-        setImageQuery(data.imageQuery || query);
-      }
-    } catch {
-      setAiError("Erro de conexão. Verifique se o servidor está rodando.");
-    } finally {
-      setIsSearching(false);
+    if (optionIndex === questions[currentQuestion].answer) {
+      setScore(score + 1);
     }
+
+    setTimeout(() => {
+      const nextQuestion = currentQuestion + 1;
+      if (nextQuestion < questions.length) {
+        setCurrentQuestion(nextQuestion);
+        setSelectedAnswer(null);
+        setShowResult(false);
+      } else {
+        setShowScore(true);
+      }
+    }, 1500);
   };
 
+  const resetQuiz = () => {
+    setCurrentQuestion(0);
+    setScore(0);
+    setShowScore(false);
+    setSelectedAnswer(null);
+    setShowResult(false);
+  };
+
+  if (showScore) {
+    return (
+      <main>
+        <div className="quiz-container">
+          <div className="score-section">
+            <h2>O Grande Colapso</h2>
+            <p>Você acertou {score} de {questions.length} perguntas!</p>
+            <p className="score-message">
+              {score >= 40 ? "Você é um verdadeiro专家 da Bíblia!" :
+               score >= 30 ? "Muito bem! Você conhece bem as Escrituras!" :
+               score >= 20 ? "Bom trabalho! Continue estudando!" :
+               "Estude mais a Bíblia e tente novamente!"}
+            </p>
+            <button onClick={resetQuiz} className="reset-button">
+              Jogar Novamente
+            </button>
+          </div>
+        </div>
+      </main>
+    );
+  }
+
   return (
-    <main className="container">
-      <h1 className="sr-only" style={{ position: 'absolute', width: '1px', height: '1px', padding: '0', margin: '-1px', overflow: 'hidden', clip: 'rect(0,0,0,0)', border: '0' }}>
-        Reflexão Bíblica Acadêmica - Estudos Profundos sobre a BÍBLIA e Exegese
-      </h1>
-
-      <script
-        type="application/ld+json"
-        dangerouslySetInnerHTML={{
-          __html: JSON.stringify({
-            "@context": "https://schema.org",
-            "@type": "WebPage",
-            "name": "Reflexão Bíblica Acadêmica",
-            "description": "Estudos profundos e acadêmicos sobre a BÍBLIA, utilizando exegese, linguística e história.",
-            "publisher": {
-              "@type": "Person",
-              "name": "Peixeweb",
-              "email": "peixeweb@gmail.com"
-            },
-            "mainEntity": {
-              "@type": "ScholarlyArticle",
-              "headline": "A BÍBLIA sob uma perspectiva acadêmica e histórica",
-              "author": {
-                "@type": "Person",
-                "name": "Peixeweb"
-              }
-            }
-          })
-        }}
-      />
-
-      <ImpactChart 
-        searches={totalSearches} 
-        topics={totalTopics} 
-        verses={totalVerses} 
-      />
-      <QueryInput onSearch={handleGlobalSearch} />
-
-      <div className="glass-card" ref={resultRef} key={searchKey}>
-        {isSearching ? (
-          <div style={{ textAlign: "center", padding: "4rem" }}>
-            <div className="loader" style={{ marginBottom: "1rem" }}>⏳ Consultando Especialista Bíblico...</div>
-            <p style={{ opacity: 0.5 }}>Analisando manuscritos e contexto histórico com IA...</p>
+    <main>
+      <div className="quiz-container">
+        <div className="question-section">
+          <h2 className="quiz-title">O Grande Colapso</h2>
+          <div className="question-count">
+            <span>Pergunta {currentQuestion + 1}</span>/{questions.length}
           </div>
-        ) : aiError ? (
-          <div style={{ textAlign: "center", padding: "3rem" }}>
-            <h2 style={{ color: "#ff6b6b", marginBottom: "1rem" }}>⚠️ Erro</h2>
-            <p>{aiError}</p>
+          <div className="question-text">
+            {questions[currentQuestion].question}
           </div>
-        ) : aiResponse ? (
-          <AIResponseView response={aiResponse} query={imageQuery || currentQuery} />
-        ) : selectedFigure ? (
-          <FigureView figure={selectedFigure} />
-        ) : (
-          <p>Selecione um tema ou faça uma pergunta.</p>
-        )}
-      </div>
+        </div>
+        
+        <div className="answer-section">
+          {questions[currentQuestion].options.map((option, index) => (
+            <button
+              key={index}
+              onClick={() => handleAnswer(index)}
+              disabled={showResult}
+              className={`answer-button ${
+                showResult 
+                  ? index === questions[currentQuestion].answer 
+                    ? "correct" 
+                    : selectedAnswer === index 
+                      ? "wrong" 
+                      : ""
+                  : ""
+              }`}
+            >
+              {option}
+            </button>
+          ))}
+        </div>
 
-      <div style={{ marginTop: "2rem", display: "flex", gap: "0.8rem", justifyContent: "center", flexWrap: "wrap" }}>
-        {biblicalFigures.filter(f => ["jesus", "moses", "paul", "jeremiah", "enoch", "thomas-gospel"].includes(f.id)).map(f => (
-          <button
-            key={f.id}
-            onClick={() => {
-              setAiResponse(null);
-              setAiError(null);
-              setSelectedFigure(f);
-              setSearchKey(prev => prev + 1);
-              if (resultRef.current) {
-                resultRef.current.scrollIntoView({ behavior: "smooth", block: "start" });
-              }
-            }}
-            className={`suggestion-tag ${selectedFigure?.id === f.id && !aiResponse ? "active" : ""}`}
-            style={selectedFigure?.id === f.id && !aiResponse ? { borderColor: "hsl(var(--accent))", color: "hsl(var(--accent))" } : {}}
-          >
-            {f.isApocryphal ? "📜 " : ""}{f.name}
-          </button>
-        ))}
+        <div className="score-display">
+          Pontuação: {score}
+        </div>
       </div>
     </main>
-  );
-}
-
-function AIResponseView({ response, query }: { response: string; query: string }) {
-  const renderMarkdown = (md: string) => {
-    let html = md
-      .replace(/^### (\d+\.\s.+)$/gm, '<h3 class="section-title" style="margin-top: 2.5rem">$1</h3>')
-      .replace(/^### (.+)$/gm, '<h3 class="section-title" style="margin-top: 2.5rem">$1</h3>')
-      .replace(/\*\*(.+?)\*\*/g, '<strong>$1</strong>')
-      .replace(/\*(.+?)\*/g, '<em>$1</em>')
-      .replace(/^- (.+)$/gm, '<li style="margin-bottom: 0.5rem">$1</li>')
-      .replace(/^\d+\.\s(.+)$/gm, '<li style="margin-bottom: 0.5rem">$1</li>')
-      .replace(/\n\n/g, '</p><p style="margin-top: 1rem; line-height: 1.8">')
-      .replace(/\n/g, '<br/>');
-
-    html = html.replace(/(<li[^>]*>.*?<\/li>(\s*<br\/>)?)+/g, (match) => {
-      return `<ul style="margin-left: 1.5rem; margin-top: 0.5rem">${match}</ul>`;
-    });
-
-    return `<p style="line-height: 1.8">${html}</p>`;
-  };
-
-  return (
-    <div className="ai-response animate-fade">
-      <p style={{ textAlign: "center", fontStyle: "italic", opacity: 0.5, marginBottom: "1rem", fontSize: "0.9rem" }}>com base em erudição acadêmica</p>
-      <TopicImage query={query} />
-      <header style={{ textAlign: "center", marginBottom: "2rem" }}>
-        <h1 style={{ fontSize: "2rem", marginBottom: "0.5rem" }}>📜 Análise do Especialista Bíblico</h1>
-      </header>
-      <div
-        className="reflection-content"
-        dangerouslySetInnerHTML={{ __html: renderMarkdown(response) }}
-      />
-    </div>
   );
 }
