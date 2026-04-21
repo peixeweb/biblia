@@ -352,7 +352,7 @@ export default function Home() {
             placeholder="Ex: João 3:16  |  Quem foi Maria Madalena?  |  Livro de Enoque  |  Gênesis 1..."
             className="search-input"
             rows={3}
-            style={{ width: "100%", resize: "vertical", minHeight: "70px", paddingRight: "110px" }}
+            style={{ width: "100%", resize: "vertical", minHeight: "110px", padding: "15px 15px 65px 15px" }}
           />
           <button
             onClick={() => handleSearch(query)}
