@@ -202,32 +202,20 @@ export async function POST(req: NextRequest) {
       const groqMsg = groqErr instanceof Error ? groqErr.message : String(groqErr);
       console.error("[search] Groq error:", groqMsg);
 
-      // Fallback to Gemini
-      if (
-        groqMsg.includes("rate_limit") ||
-        groqMsg.includes("429") ||
-        groqMsg.includes("503") ||
-        groqMsg.includes("overloaded")
-      ) {
-        try {
-          rawText = await callGemini(query.trim());
-          usedProvider = "gemini";
-        } catch (geminiErr: unknown) {
-          const geminiMsg =
-            geminiErr instanceof Error ? geminiErr.message : String(geminiErr);
-          console.error("[search] Gemini error:", geminiMsg);
-          return NextResponse.json(
-            {
-              error:
-                "Serviço temporariamente indisponível. Tente novamente em alguns segundos.",
-            },
-            { status: 503 }
-          );
-        }
-      } else {
+      // Fallback to Gemini unconditionally on any Groq error
+      try {
+        rawText = await callGemini(query.trim());
+        usedProvider = "gemini";
+      } catch (geminiErr: unknown) {
+        const geminiMsg =
+          geminiErr instanceof Error ? geminiErr.message : String(geminiErr);
+        console.error("[search] Gemini error:", geminiMsg);
         return NextResponse.json(
-          { error: "Erro ao processar consulta: " + groqMsg },
-          { status: 500 }
+          {
+            error:
+              "Serviço temporariamente indisponível. Tente novamente em alguns segundos.",
+          },
+          { status: 503 }
         );
       }
     }
