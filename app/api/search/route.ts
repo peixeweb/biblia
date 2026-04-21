@@ -89,44 +89,7 @@ async function callGroq(query: string): Promise<string> {
   return chatCompletion.choices[0]?.message?.content || "";
 }
 
-// ─── CALL GEMINI (fallback) ───────────────────────────────────────────────────
-async function callGemini(query: string): Promise<string> {
-  const apiKey = process.env.GEMINI_API_KEY || "";
-  const url = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=${apiKey}`;
 
-  const body = {
-    contents: [
-      {
-        parts: [
-          {
-            text:
-              SYSTEM_PROMPT +
-              `\n\nAnalise academicamente a seguinte consulta bíblica e retorne SOMENTE o JSON válido:\n\n"${query}"`,
-          },
-        ],
-      },
-    ],
-    generationConfig: {
-      temperature: 0.4,
-      maxOutputTokens: 6000,
-      responseMimeType: "application/json",
-    },
-  };
-
-  const response = await fetch(url, {
-    method: "POST",
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify(body),
-  });
-
-  const data = await response.json();
-
-  if (!response.ok) {
-    throw new Error(data?.error?.message || "Gemini API error");
-  }
-
-  return data?.candidates?.[0]?.content?.parts?.[0]?.text || "";
-}
 
 // ─── SAFE JSON PARSE ─────────────────────────────────────────────────────────
 function safeParseJSON(text: string): Record<string, unknown> | null {
@@ -195,29 +158,23 @@ export async function POST(req: NextRequest) {
     let rawText = "";
     let usedProvider = "groq";
 
-    // Try Groq first
+    // Use Groq
     try {
       rawText = await callGroq(query.trim());
     } catch (groqErr: unknown) {
       const groqMsg = groqErr instanceof Error ? groqErr.message : String(groqErr);
       console.error("[search] Groq error:", groqMsg);
 
-      // Fallback to Gemini unconditionally on any Groq error
-      try {
-        rawText = await callGemini(query.trim());
-        usedProvider = "gemini";
-      } catch (geminiErr: unknown) {
-        const geminiMsg =
-          geminiErr instanceof Error ? geminiErr.message : String(geminiErr);
-        console.error("[search] Gemini error:", geminiMsg);
-        return NextResponse.json(
-          {
-            error:
-              "Falha em ambos os servidores. " + geminiMsg,
-          },
-          { status: 503 }
-        );
+      let userMsg = "Erro ao processar consulta. Tente novamente mais tarde.";
+      
+      if (groqMsg.includes("rate_limit") || groqMsg.includes("429")) {
+        userMsg = "Limite de consultas excedido. Devido à alta demanda do plano, aguarde cerca de 1 minuto antes de pesquisar novamente.";
       }
+
+      return NextResponse.json(
+        { error: userMsg },
+        { status: 503 }
+      );
     }
 
     if (!rawText || rawText.trim().length < 10) {
