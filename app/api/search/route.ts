@@ -213,7 +213,7 @@ export async function POST(req: NextRequest) {
         return NextResponse.json(
           {
             error:
-              "Serviço temporariamente indisponível. Tente novamente em alguns segundos.",
+              "Falha em ambos os servidores. " + geminiMsg,
           },
           { status: 503 }
         );
