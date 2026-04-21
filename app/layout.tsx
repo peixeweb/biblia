@@ -35,15 +35,15 @@ export default function RootLayout({
           </a>
         </header>
         {children}
-        <footer style={{ padding: '40px 20px', backgroundColor: '#f8f9fa', borderTop: '1px solid #eee', textAlign: 'center', marginTop: 'auto' }}>
+        <footer style={{ padding: '40px 20px', backgroundColor: '#1c1c24', borderTop: '1px solid #333', textAlign: 'center', marginTop: 'auto' }}>
           <div style={{ maxWidth: '1200px', margin: '0 auto' }}>
-            <p style={{ marginBottom: '20px', color: '#333', fontWeight: 600 }}>Reflexão Bíblica Acadêmica</p>
-            <p style={{ marginBottom: '20px', color: '#666' }}>Contato: <a href="mailto:peixeweb@gmail.com" style={{ color: '#0070f3', textDecoration: 'none' }}>peixeweb@gmail.com</a></p>
+            <p style={{ marginBottom: '20px', color: '#aaa', fontWeight: 600 }}>Reflexão Bíblica Acadêmica</p>
+            <p style={{ marginBottom: '20px', color: '#999' }}>Contato: <a href="mailto:peixeweb@gmail.com" style={{ color: '#d4af37', textDecoration: 'none' }}>peixeweb@gmail.com</a></p>
             <div style={{ display: 'flex', justifyContent: 'center', gap: '20px', marginBottom: '20px' }}>
-              <a style={{ color: '#666', textDecoration: 'none', fontSize: '14px' }} href="/termos">Termos de Uso</a>
-              <a style={{ color: '#666', textDecoration: 'none', fontSize: '14px' }} href="/privacidade">Política de Privacidade</a>
+              <a style={{ color: '#888', textDecoration: 'none', fontSize: '14px' }} href="/termos">Termos de Uso</a>
+              <a style={{ color: '#888', textDecoration: 'none', fontSize: '14px' }} href="/privacidade">Política de Privacidade</a>
             </div>
-            <p style={{ color: '#999', fontSize: '12px' }}>© 2026 Especialista em Erudição Bíblica Acadêmica.</p>
+            <p style={{ color: '#666', fontSize: '12px' }}>© 2026 Especialista em Erudição Bíblica Acadêmica.</p>
           </div>
         </footer>
       </body>
