@@ -165,7 +165,7 @@ export async function POST(req: NextRequest) {
       const groqMsg = groqErr instanceof Error ? groqErr.message : String(groqErr);
       console.error("[search] Groq error:", groqMsg);
 
-      let userMsg = "Erro ao processar consulta. Tente novamente mais tarde.";
+      let userMsg = "Erro Groq: " + groqMsg;
       
       if (groqMsg.includes("rate_limit") || groqMsg.includes("429")) {
         userMsg = "Limite de consultas excedido. Devido à alta demanda do plano, aguarde cerca de 1 minuto antes de pesquisar novamente.";
