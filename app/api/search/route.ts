@@ -271,6 +271,7 @@ export async function POST(req: NextRequest) {
       const versiculosCount = Array.isArray(parsed.relatedVerses)
         ? (parsed.relatedVerses as unknown[]).length
         : 0;
+      // @ts-expect-error Types are not fully generated for the Supabase RPC
       await sb.rpc("increment_stats", {
         temas_count: 1,
         versiculos_count: versiculosCount,
