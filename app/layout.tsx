@@ -1,16 +1,20 @@
-import { ServiceWorkerRegistration } from "../components/ServiceWorkerRegistration";
+import "./globals.css";
 import { InstallPrompt } from "../components/InstallPrompt";
 
-export const metadata = {
-  title: "Pesquisa Bíblica",
-  description: "Pesquisas Bíblicas Sem Viés. A Verdade da Palavra, com Clareza e Equilíbrio.",
-  manifest: "/manifest.json",
+export const viewport = {
+  width: "device-width",
+  initialScale: 1,
+  maximumScale: 1,
   themeColor: "#d4af37",
-  viewport: "width=device-width, initial-scale=1, maximum-scale=1",
-  icons: {
-    apple: "/icon-192x192.png",
-  },
-}; // <--- ESSA CHAVE AQUI ESTAVA FALTANDO!
+};
+
+export const metadata = {
+  title: "Reflexão Bíblica Acadêmica | Estudos Profundos da BÍBLIA",
+  description: "Portal especializado em exegese, linguística e história do Oriente Próximo.",
+  authors: [{ name: "Peixeweb", url: "https://peixeweb.github.io/vendas_pela_internet/" }],
+  keywords: ["BÍBLIA", "estudos bíblicos", "exegese", "história antiga"],
+  manifest: "/manifest.json",
+};
 
 export default function RootLayout({
   children,
@@ -18,14 +22,30 @@ export default function RootLayout({
   children: React.ReactNode;
 }) {
   return (
-    <html lang="pt-BR">
+    <html lang="pt-BR" suppressHydrationWarning>
       <head>
         <link rel="manifest" href="/manifest.json" />
       </head>
-      <body>
-        <ServiceWorkerRegistration />
+      <body className="flex flex-col min-h-screen" suppressHydrationWarning>
         <InstallPrompt />
+        <header style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', padding: '10px', backgroundColor: '#ffffff', boxShadow: '0 2px 4px rgba(0,0,0,0.1)', zIndex: 1000, position: 'relative' }}>
+          <span style={{ marginRight: '10px', fontSize: '14px', fontWeight: 500, color: '#333', fontFamily: "'Inter', sans-serif" }}>Desenvolvido por</span>
+          <a href="https://peixeweb.github.io/vendas_pela_internet/" target="_blank" rel="noopener noreferrer" style={{ display: 'flex', alignItems: 'center' }}>
+            <img src="/peixeweb-logo.png" alt="Peixeweb Logo" style={{ height: '120px', width: 'auto', objectFit: 'contain' }} />
+          </a>
+        </header>
         {children}
+        <footer style={{ padding: '40px 20px', backgroundColor: '#f8f9fa', borderTop: '1px solid #eee', textAlign: 'center', marginTop: 'auto' }}>
+          <div style={{ maxWidth: '1200px', margin: '0 auto' }}>
+            <p style={{ marginBottom: '20px', color: '#333', fontWeight: 600 }}>Reflexão Bíblica Acadêmica</p>
+            <p style={{ marginBottom: '20px', color: '#666' }}>Contato: <a href="mailto:peixeweb@gmail.com" style={{ color: '#0070f3', textDecoration: 'none' }}>peixeweb@gmail.com</a></p>
+            <div style={{ display: 'flex', justifyContent: 'center', gap: '20px', marginBottom: '20px' }}>
+              <a style={{ color: '#666', textDecoration: 'none', fontSize: '14px' }} href="/termos">Termos de Uso</a>
+              <a style={{ color: '#666', textDecoration: 'none', fontSize: '14px' }} href="/privacidade">Política de Privacidade</a>
+            </div>
+            <p style={{ color: '#999', fontSize: '12px' }}>© 2026 Especialista em Erudição Bíblica Acadêmica.</p>
+          </div>
+        </footer>
       </body>
     </html>
   );
