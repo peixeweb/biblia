@@ -218,6 +218,7 @@ function SectionBlock({ title, children }: { title: string; children: React.Reac
 // ─── Main Page ────────────────────────────────────────────────────────────────
 export default function Home() {
   const [query, setQuery] = useState("");
+  const [searchQuery, setSearchQuery] = useState("");
   const [result, setResult] = useState<SearchResult | null>(null);
   const [loading, setLoading] = useState(false);
   const [errorMsg, setErrorMsg] = useState<string | null>(null);
@@ -237,7 +238,8 @@ export default function Home() {
     const trimmed = searchQuery.trim();
     if (!trimmed) return;
 
-    setQuery(trimmed);
+    setSearchQuery(trimmed);
+    setQuery("");
     setLoading(true);
     setResult(null);
     setErrorMsg(null);
@@ -290,8 +292,9 @@ export default function Home() {
             const imgRes = await fetch(`/api/image?q=${encodeURIComponent(candidate)}`);
             if (imgRes.ok) {
               const imgData = await imgRes.json();
-              if (imgData.imageUrl) {
-                setCharacterImage(imgData.imageUrl);
+              const imageUrl = typeof imgData.imageUrl === 'string' ? imgData.imageUrl.trim() : "";
+              if (imageUrl && /^(data:|https?:\/\/)/.test(imageUrl)) {
+                setCharacterImage(imageUrl);
                 foundImage = true;
               }
             }
@@ -447,7 +450,7 @@ export default function Home() {
             <div style={{ textAlign: "center", marginBottom: "20px" }}>
               <img
                 src={characterImage}
-                alt={query}
+                alt={searchQuery || query}
                 style={{
                   maxWidth: "260px", borderRadius: "12px",
                   boxShadow: "0 4px 16px rgba(0,0,0,0.15)", border: "3px solid #d4af37"

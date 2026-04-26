@@ -138,10 +138,17 @@ function findKnown(query: string): string | null {
   return null;
 }
 
+const DEFAULT_FETCH_HEADERS = {
+  'User-Agent': 'BibliaAcademica/1.0 (educational project)',
+};
+
 async function fetchWikipediaThumb(title: string, lang: 'pt' | 'en'): Promise<string | null> {
   const url = `https://${lang}.wikipedia.org/w/api.php?action=query&titles=${encodeURIComponent(title)}&prop=pageimages&pithumbsize=500&format=json&origin=*`;
   try {
-    const res = await fetch(url, { signal: AbortSignal.timeout(6000) });
+    const res = await fetch(url, {
+      signal: AbortSignal.timeout(6000),
+      headers: DEFAULT_FETCH_HEADERS,
+    });
     if (!res.ok) return null;
     const data = await res.json();
     const pages = data?.query?.pages;
@@ -158,7 +165,10 @@ async function searchWikipedia(query: string, lang: 'pt' | 'en'): Promise<string
   // Use Wikipedia's opensearch to find the best article title, then fetch its image
   const url = `https://${lang}.wikipedia.org/w/api.php?action=opensearch&search=${encodeURIComponent(query)}&limit=3&format=json&origin=*`;
   try {
-    const res = await fetch(url, { signal: AbortSignal.timeout(6000) });
+    const res = await fetch(url, {
+      signal: AbortSignal.timeout(6000),
+      headers: DEFAULT_FETCH_HEADERS,
+    });
     if (!res.ok) return null;
     const data = await res.json();
     const titles: string[] = data?.[1] || [];
@@ -245,10 +255,16 @@ export async function GET(request: NextRequest) {
     }
 
     // Stream the image as base64 to avoid CORS issues on the client
-    const imgRes = await fetch(imageUrl, { signal: AbortSignal.timeout(8000) });
+    const imgRes = await fetch(imageUrl, {
+      signal: AbortSignal.timeout(8000),
+      headers: {
+        ...DEFAULT_FETCH_HEADERS,
+        Accept: 'image/*',
+      },
+    });
     if (!imgRes.ok) {
-      // Return the URL directly as fallback (client fetches it)
-      return NextResponse.json({ imageUrl, title: query, source: 'wikipedia-url' });
+      console.warn('[image] Remote image fetch failed', { imageUrl, status: imgRes.status });
+      return NextResponse.json({ error: 'Image unavailable' }, { status: 502 });
     }
 
     const buffer = await imgRes.arrayBuffer();

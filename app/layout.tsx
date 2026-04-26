@@ -28,8 +28,8 @@ export default function RootLayout({
       </head>
       <body className="flex flex-col min-h-screen" suppressHydrationWarning>
         <InstallPrompt />
-        <header style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', padding: '10px', backgroundColor: '#ffffff', boxShadow: '0 2px 4px rgba(0,0,0,0.1)', zIndex: 1000, position: 'relative' }}>
-          <span style={{ marginRight: '10px', fontSize: '14px', fontWeight: 500, color: '#333', fontFamily: "'Inter', sans-serif" }}>Desenvolvido por</span>
+        <header style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', padding: '10px', backgroundColor: '#f9f6ee', boxShadow: '0 8px 20px rgba(0, 0, 0, 0.08)', borderBottom: '1px solid rgba(0, 0, 0, 0.06)', zIndex: 1000, position: 'relative' }}>
+          <span style={{ marginRight: '10px', fontSize: '14px', fontWeight: 500, color: '#4f4b45', fontFamily: "'Inter', sans-serif" }}>Desenvolvido por</span>
           <a href="https://peixeweb.github.io/vendas_pela_internet/" target="_blank" rel="noopener noreferrer" style={{ display: 'flex', alignItems: 'center' }}>
             <img src="/peixeweb-logo.png" alt="Peixeweb Logo" style={{ height: '120px', width: 'auto', objectFit: 'contain' }} />
           </a>
