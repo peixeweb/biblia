@@ -1,0 +1,11 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" role="img" aria-label="Favicon Bíblia">
+  <rect width="64" height="64" rx="14" fill="#1c1c24"/>
+  <g transform="translate(8 8)">
+    <rect x="2" y="8" width="44" height="36" rx="6" fill="#f9f6ee" stroke="#d4af37" stroke-width="4"/>
+    <path d="M12 18h20" stroke="#1c1c24" stroke-width="3" stroke-linecap="round"/>
+    <path d="M12 24h20" stroke="#1c1c24" stroke-width="3" stroke-linecap="round"/>
+    <path d="M12 30h20" stroke="#1c1c24" stroke-width="3" stroke-linecap="round"/>
+    <path d="M27 18v16" stroke="#d4af37" stroke-width="4" stroke-linecap="round"/>
+    <path d="M20 25h14" stroke="#d4af37" stroke-width="4" stroke-linecap="round"/>
+  </g>
+</svg>
