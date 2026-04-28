@@ -31,28 +31,24 @@ export default function RootLayout({
         <InstallPrompt />
         <header className="main-header" style={{ 
           display: 'flex', 
-          justifyContent: 'center', 
+          justifyContent: 'space-between', 
           alignItems: 'center', 
-          padding: '10px 15px', 
+          padding: '5px 20px', 
           backgroundColor: '#d4af37', 
           boxShadow: '0 4px 15px rgba(0,0,0,0.2)', 
           zIndex: 1000, 
           position: 'relative',
-          gap: '10px',
-          flexWrap: 'nowrap',
-          overflow: 'hidden'
+          gap: '15px',
+          flexWrap: 'wrap',
+          overflow: 'visible'
         }}>
-          <div className="header-impact">
-            <ImpactPanel />
-          </div>
-          
           <a href="https://peixeweb.github.io/vendas_pela_internet/" target="_blank" rel="noopener noreferrer" className="header-logo-container" style={{ 
             display: 'flex', 
             alignItems: 'center', 
             justifyContent: 'center',
             position: 'relative',
-            width: '280px',
-            height: '280px',
+            width: '180px',
+            height: '180px',
             flexShrink: 0
           }}>
             {/* Circular Text SVG */}
@@ -74,13 +70,16 @@ export default function RootLayout({
             
             <img src="/logo-sem-fundo.png" alt="Peixeweb Logo" style={{ 
               height: 'auto', 
-              width: '180px', 
+              width: '120px', 
               objectFit: 'contain',
               position: 'relative',
               zIndex: 2
             }} />
           </a>
 
+          <div className="header-impact">
+            <ImpactPanel />
+          </div>
 
 
           <style dangerouslySetInnerHTML={{ __html: `
