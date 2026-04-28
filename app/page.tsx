@@ -29,7 +29,13 @@ interface AcademicPerspective {
   canon?: string;
 }
 
+interface DisambiguationEntry {
+  nome: string;
+  identificacao: string;
+}
+
 interface SearchResult {
+  disambiguation?: DisambiguationEntry[];
   essentialText: string;
   paraphrases: string[];
   translationAnalysis: TranslationAnalysis;
@@ -217,19 +223,38 @@ function SectionBlock({ title, children }: { title: string; children: React.Reac
 
 // ─── Main Page ────────────────────────────────────────────────────────────────
 export default function Home() {
+  const MAX_DAILY_QUERIES = 12;
   const [query, setQuery] = useState("");
-  const [searchQuery, setSearchQuery] = useState("");
   const [result, setResult] = useState<SearchResult | null>(null);
   const [loading, setLoading] = useState(false);
   const [errorMsg, setErrorMsg] = useState<string | null>(null);
   const [characterImage, setCharacterImage] = useState<string | null>(null);
   const [stats, setStats] = useState({ consultas: 0, temas: 0, versiculos: 0 });
+  const [dailyCount, setDailyCount] = useState(0);
 
   useEffect(() => {
     if (typeof window !== "undefined") {
-      const saved = localStorage.getItem("bibliaStats");
-      if (saved) {
-        try { setStats(JSON.parse(saved)); } catch { /* ignore */ }
+      // General stats
+      const savedStats = localStorage.getItem("bibliaStats");
+      if (savedStats) {
+        try { setStats(JSON.parse(savedStats)); } catch { /* ignore */ }
+      }
+
+      // Daily limit logic
+      const today = new Date().toISOString().split('T')[0];
+      const savedLimit = localStorage.getItem("dailyLimit");
+      if (savedLimit) {
+        try {
+          const { date, count } = JSON.parse(savedLimit);
+          if (date === today) {
+            setDailyCount(count);
+          } else {
+            localStorage.setItem("dailyLimit", JSON.stringify({ date: today, count: 0 }));
+            setDailyCount(0);
+          }
+        } catch { /* ignore */ }
+      } else {
+        localStorage.setItem("dailyLimit", JSON.stringify({ date: today, count: 0 }));
       }
     }
   }, []);
@@ -238,8 +263,12 @@ export default function Home() {
     const trimmed = searchQuery.trim();
     if (!trimmed) return;
 
-    setSearchQuery(trimmed);
-    setQuery("");
+    if (dailyCount >= MAX_DAILY_QUERIES) {
+      setErrorMsg(`Você atingiu o limite diário de ${MAX_DAILY_QUERIES} consultas. Volte amanhã para continuar seus estudos!`);
+      return;
+    }
+
+    setQuery(""); // Limpa o campo de busca
     setLoading(true);
     setResult(null);
     setErrorMsg(null);
@@ -261,8 +290,13 @@ export default function Home() {
       }
 
       setResult(data);
+      
+      // Update local stats and daily limit
+      const newDailyCount = dailyCount + 1;
+      setDailyCount(newDailyCount);
+      const today = new Date().toISOString().split('T')[0];
+      localStorage.setItem("dailyLimit", JSON.stringify({ date: today, count: newDailyCount }));
 
-      // Update local stats
       const newStats = {
         consultas: stats.consultas + 1,
         temas: stats.temas + 1,
@@ -270,39 +304,15 @@ export default function Home() {
       };
       setStats(newStats);
       localStorage.setItem("bibliaStats", JSON.stringify(newStats));
+      window.dispatchEvent(new Event("statsUpdated"));
 
-      // Fetch image — try multiple search terms in sequence
-      {
-        // Build candidate terms: imageSearch from API first, then the original query,
-        // then just the first meaningful word of the query
-        const firstWord = trimmed.split(/[\s,.-]/)[0] || "";
-        const candidates: string[] = [];
-        if (data.imageSearch) candidates.push(data.imageSearch);
-        candidates.push(trimmed);
-        if (firstWord.length > 2 && firstWord.toLowerCase() !== trimmed.toLowerCase()) {
-          candidates.push(firstWord);
-        }
-        // Remove duplicates
-        const uniqueCandidates = [...new Set(candidates)];
-
-        let foundImage = false;
-        for (const candidate of uniqueCandidates) {
-          if (foundImage) break;
-          try {
-            const imgRes = await fetch(`/api/image?q=${encodeURIComponent(candidate)}`);
-            if (imgRes.ok) {
-              const imgData = await imgRes.json();
-              const imageUrl = typeof imgData.imageUrl === 'string' ? imgData.imageUrl.trim() : "";
-              if (imageUrl && /^(data:|https?:\/\/)/.test(imageUrl)) {
-                setCharacterImage(imageUrl);
-                foundImage = true;
-              }
-            }
-          } catch {
-            // Image is optional — continue trying next candidate
-          }
-        }
-      }
+      // The image API now returns bytes directly — just build the URL and set it as src.
+      // The browser will request /api/image?q=... which proxies the image server-side.
+      const imgQuery = (data.imageSearch && typeof data.imageSearch === 'string' && data.imageSearch.trim().length > 2)
+        ? data.imageSearch.trim()
+        : trimmed;
+      setCharacterImage(`/api/image?q=${encodeURIComponent(imgQuery)}`);
+      
     } catch (err) {
       setErrorMsg("Falha na conexão. Verifique sua internet e tente novamente.");
       console.error("[page] fetch error:", err);
@@ -315,27 +325,7 @@ export default function Home() {
     <main style={{ maxWidth: "680px", margin: "0 auto", padding: "20px" }}>
       <h1 className="sr-only">Reflexão Bíblica Acadêmica — Exegese, Linguística e História</h1>
 
-      {/* ── Stats Panel ── */}
-      <div style={{
-        background: "#1a1a1a", borderRadius: "15px", padding: "18px",
-        marginBottom: "24px", border: "1px solid #333"
-      }}>
-        <p style={{ fontSize: "0.75rem", color: "#d4af37", letterSpacing: "2px", marginBottom: "14px", textAlign: "center" }}>
-          PAINEL DE IMPACTO
-        </p>
-        <div style={{ display: "grid", gridTemplateColumns: "repeat(3,1fr)", gap: "10px", textAlign: "center" }}>
-          {[
-            { label: "Consultas", value: stats.consultas },
-            { label: "Temas Explorados", value: stats.temas },
-            { label: "Versículos", value: stats.versiculos },
-          ].map((s) => (
-            <div key={s.label}>
-              <div style={{ fontSize: "1.6rem", fontWeight: "bold", color: "#d4af37" }}>{s.value}</div>
-              <div style={{ fontSize: "0.68rem", color: "#888" }}>{s.label}</div>
-            </div>
-          ))}
-        </div>
-      </div>
+
 
       {/* ── Search Section ── */}
       <div style={{ marginBottom: "28px" }}>
@@ -365,6 +355,19 @@ export default function Home() {
           >
             {loading ? "⏳ Buscando..." : "🔍 Consultar"}
           </button>
+        </div>
+
+        {/* Daily Limit Indicator */}
+        <div style={{ 
+          marginTop: "12px", 
+          fontSize: "0.85rem", 
+          color: dailyCount >= MAX_DAILY_QUERIES - 3 ? "#ff4d4d" : "#888",
+          fontWeight: "500",
+          textAlign: "center"
+        }}>
+          {dailyCount >= MAX_DAILY_QUERIES 
+            ? "⚠️ Limite diário atingido" 
+            : `📉 Consultas restantes hoje: ${MAX_DAILY_QUERIES - dailyCount}`}
         </div>
 
         {/* Suggestions */}
@@ -450,12 +453,42 @@ export default function Home() {
             <div style={{ textAlign: "center", marginBottom: "20px" }}>
               <img
                 src={characterImage}
-                alt={searchQuery || query}
+                alt="Imagem representativa do tema"
                 style={{
                   maxWidth: "260px", borderRadius: "12px",
                   boxShadow: "0 4px 16px rgba(0,0,0,0.15)", border: "3px solid #d4af37"
                 }}
               />
+            </div>
+          )}
+
+          {/* Disambiguation panel */}
+          {result.disambiguation && result.disambiguation.length > 1 && (
+            <div style={{
+              background: "#fffbe6", border: "2px solid #d4af37", borderRadius: "12px",
+              padding: "16px", marginBottom: "20px"
+            }}>
+              <p style={{ color: "#b8860b", fontWeight: "bold", fontSize: "0.85rem", marginBottom: "10px" }}>
+                ⚠️ Existem múltiplos personagens bíblicos/históricos com esse nome:
+              </p>
+              <div style={{ display: "flex", flexDirection: "column", gap: "8px" }}>
+                {result.disambiguation.map((d, i) => (
+                  <div key={i} style={{
+                    background: "#fff", border: "1px solid #e8dfc0", borderRadius: "8px",
+                    padding: "8px 12px", display: "flex", gap: "10px", alignItems: "flex-start"
+                  }}>
+                    <span style={{
+                      minWidth: "22px", height: "22px", background: "#d4af37", color: "#000",
+                      borderRadius: "50%", fontSize: "0.7rem", fontWeight: "bold",
+                      display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0
+                    }}>{i + 1}</span>
+                    <div>
+                      <strong style={{ color: "#b8860b", fontSize: "0.85rem" }}>{d.nome}</strong>
+                      <p style={{ color: "#666", fontSize: "0.8rem", margin: "2px 0 0" }}>{d.identificacao}</p>
+                    </div>
+                  </div>
+                ))}
+              </div>
             </div>
           )}
 
