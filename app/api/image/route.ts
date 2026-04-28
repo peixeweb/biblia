@@ -122,6 +122,22 @@ async function searchWikipedia(query: string, lang: 'pt' | 'en'): Promise<string
   return null;
 }
 
+async function fetchUnsplash(query: string): Promise<string | null> {
+  const accessKey = process.env.UNSPLASH_ACCESS_KEY;
+  if (!accessKey) return null;
+  // Unsplash search API
+  const url = `https://api.unsplash.com/search/photos?query=${encodeURIComponent(query)}&client_id=${accessKey}&per_page=1&orientation=landscape`;
+  try {
+    const res = await fetch(url, { headers: { 'User-Agent': 'BibliaAcademica/1.0' } });
+    if (!res.ok) return null;
+    const data = await res.json();
+    if (data && data.results && data.results.length > 0) {
+      return data.results[0].urls.regular;
+    }
+  } catch { /* ignore */ }
+  return null;
+}
+
 // ─── Route — returns image bytes directly (no base64, no CORS issues) ─────────
 export async function GET(request: NextRequest) {
   const { searchParams } = new URL(request.url);
@@ -145,6 +161,10 @@ export async function GET(request: NextRequest) {
   if (!imageUrl) imageUrl = await searchWikipedia(query + ' (apostle)', 'en');
   if (!imageUrl) imageUrl = await searchWikipedia(query + ' (prophet)', 'en');
   if (!imageUrl) imageUrl = await searchWikipedia(query + ' ancient history', 'en');
+
+  // Unsplash Fallback
+  if (!imageUrl) imageUrl = await fetchUnsplash(query + ' bible');
+  if (!imageUrl) imageUrl = await fetchUnsplash(query + ' religion');
 
   // First-word fallback
   if (!imageUrl) {
