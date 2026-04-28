@@ -52,7 +52,7 @@ ESTRUTURA JSON OBRIGATÓRIA (retorne EXATAMENTE neste formato):
     "linguistics": "Análise linguística: raízes gregas (Strong's), hebraicas, aramaicas; nuances perdidas; cognatos semíticos."
   },
   "historicalContext": {
-    "period": "Período histórico exato com das (ex: Século I d.C., Era do Segundo Templo, aprox. 30-33 d.C.)",
+    "period": "Período histórico exato com datas (ex: Século I d.C., Era do Segundo Templo, aprox. 30-33 d.C.)",
     "environment": "Cenário geopolítico: poder romano, seitas judaicas (fariseus, saduceus, essênios, zelotes), contexto socioeconômico.",
     "details": "Evidências arqueológicas e fontes externas: Josefo, Fílon, Tácito, manuscritos, papiros, inscrições, sítios que confirmam ou contextualizam."
   },

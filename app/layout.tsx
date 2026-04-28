@@ -1,5 +1,6 @@
 import "./globals.css";
 import { InstallPrompt } from "../components/InstallPrompt";
+import { ImpactPanel } from "../components/ImpactPanel";
 
 export const viewport = {
   width: "device-width",
@@ -25,17 +26,93 @@ export default function RootLayout({
     <html lang="pt-BR" suppressHydrationWarning>
       <head>
         <link rel="manifest" href="/manifest.json" />
-        <link rel="icon" href="/favicon.svg" />
-        <link rel="apple-touch-icon" href="/favicon.svg" />
       </head>
       <body className="flex flex-col min-h-screen" suppressHydrationWarning>
         <InstallPrompt />
-        <header style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', padding: '10px', backgroundColor: '#f9f6ee', boxShadow: '0 8px 20px rgba(0, 0, 0, 0.08)', borderBottom: '1px solid rgba(0, 0, 0, 0.06)', zIndex: 1000, position: 'relative' }}>
-          <span style={{ marginRight: '10px', fontSize: '14px', fontWeight: 500, color: '#4f4b45', fontFamily: "'Inter', sans-serif" }}>Desenvolvido por</span>
-          <a href="https://peixeweb.github.io/vendas_pela_internet/" target="_blank" rel="noopener noreferrer" style={{ display: 'flex', alignItems: 'center' }}>
-            <img src="/peixeweb-logo.png" alt="Peixeweb Logo" style={{ height: '120px', width: 'auto', objectFit: 'contain' }} />
+        <header className="main-header" style={{ 
+          display: 'flex', 
+          justifyContent: 'center', 
+          alignItems: 'center', 
+          padding: '10px 15px', 
+          backgroundColor: '#d4af37', 
+          boxShadow: '0 4px 15px rgba(0,0,0,0.2)', 
+          zIndex: 1000, 
+          position: 'relative',
+          gap: '10px',
+          flexWrap: 'nowrap',
+          overflow: 'hidden'
+        }}>
+          <div className="header-impact">
+            <ImpactPanel />
+          </div>
+          
+          <a href="https://peixeweb.github.io/vendas_pela_internet/" target="_blank" rel="noopener noreferrer" className="header-logo-container" style={{ 
+            display: 'flex', 
+            alignItems: 'center', 
+            justifyContent: 'center',
+            position: 'relative',
+            width: '280px',
+            height: '280px',
+            flexShrink: 0
+          }}>
+            {/* Circular Text SVG */}
+            <svg viewBox="0 0 200 200" style={{
+              position: 'absolute',
+              width: '100%',
+              height: '100%',
+              animation: 'rotate-text 20s linear infinite'
+            }}>
+              <defs>
+                <path id="circlePath" d="M 100, 100 m -75, 0 a 75, 75 0 1, 1 150, 0 a 75, 75 0 1, 1 -150, 0" />
+              </defs>
+              <text style={{ fontSize: '13px', fontWeight: 'bold', fill: '#000', textTransform: 'uppercase', letterSpacing: '1.2px' }}>
+                <textPath xlinkHref="#circlePath">
+                  Marketing Digital Com Inteligência • Marketing Digital Com Inteligência • 
+                </textPath>
+              </text>
+            </svg>
+            
+            <img src="/logo-sem-fundo.png" alt="Peixeweb Logo" style={{ 
+              height: 'auto', 
+              width: '180px', 
+              objectFit: 'contain',
+              position: 'relative',
+              zIndex: 2
+            }} />
           </a>
+
+
+
+          <style dangerouslySetInnerHTML={{ __html: `
+            @keyframes rotate-text {
+              from { transform: rotate(0deg); }
+              to { transform: rotate(360deg); }
+            }
+            @media (max-width: 480px) {
+              .main-header {
+                gap: 5px !important;
+                padding: 5px 10px !important;
+              }
+              .header-logo-container {
+                width: 140px !important;
+                height: 140px !important;
+              }
+              .header-logo-container img {
+                width: 80px !important;
+              }
+              .header-logo-container svg text {
+                font-size: 16px !important;
+              }
+              /* Reduzir o ImpactPanel via CSS se necessário, 
+                 mas ele já é fit-content */
+              .header-impact {
+                transform: scale(0.85);
+                transform-origin: center;
+              }
+            }
+          `}} />
         </header>
+
         {children}
         <footer style={{ padding: '40px 20px', backgroundColor: '#1c1c24', borderTop: '1px solid #333', textAlign: 'center', marginTop: 'auto' }}>
           <div style={{ maxWidth: '1200px', margin: '0 auto' }}>
