@@ -33,22 +33,21 @@ export default function RootLayout({
           display: 'flex', 
           justifyContent: 'space-between', 
           alignItems: 'center', 
-          padding: '5px 20px', 
+          padding: '10px 20px', 
           backgroundColor: '#d4af37', 
           boxShadow: '0 4px 15px rgba(0,0,0,0.2)', 
           zIndex: 1000, 
           position: 'relative',
           gap: '15px',
-          flexWrap: 'wrap',
-          overflow: 'visible'
+          overflow: 'hidden' // hidden to prevent SVG overflow
         }}>
           <a href="https://peixeweb.github.io/vendas_pela_internet/" target="_blank" rel="noopener noreferrer" className="header-logo-container" style={{ 
             display: 'flex', 
             alignItems: 'center', 
             justifyContent: 'center',
             position: 'relative',
-            width: '180px',
-            height: '180px',
+            width: '150px',
+            height: '150px',
             flexShrink: 0
           }}>
             {/* Circular Text SVG */}
@@ -70,7 +69,7 @@ export default function RootLayout({
             
             <img src="/logo-sem-fundo.png" alt="Peixeweb Logo" style={{ 
               height: 'auto', 
-              width: '120px', 
+              width: '90px', 
               objectFit: 'contain',
               position: 'relative',
               zIndex: 2
@@ -87,10 +86,11 @@ export default function RootLayout({
               from { transform: rotate(0deg); }
               to { transform: rotate(360deg); }
             }
-            @media (max-width: 480px) {
+            @media (max-width: 600px) {
               .main-header {
-                gap: 5px !important;
-                padding: 5px 10px !important;
+                flex-direction: column !important;
+                gap: 15px !important;
+                padding: 15px 10px !important;
               }
               .header-logo-container {
                 width: 140px !important;
@@ -99,14 +99,12 @@ export default function RootLayout({
               .header-logo-container img {
                 width: 80px !important;
               }
-              .header-logo-container svg text {
-                font-size: 16px !important;
-              }
-              /* Reduzir o ImpactPanel via CSS se necessário, 
-                 mas ele já é fit-content */
               .header-impact {
-                transform: scale(0.85);
+                transform: scale(0.9);
                 transform-origin: center;
+                width: 100%;
+                display: flex;
+                justify-content: center;
               }
             }
           `}} />

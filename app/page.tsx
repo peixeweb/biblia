@@ -330,7 +330,7 @@ export default function Home() {
       {/* ── Search Section ── */}
       <div style={{ marginBottom: "28px" }}>
         <h2 style={{ textAlign: "center", fontSize: "1.2rem", color: "#b8860b", marginBottom: "14px", fontWeight: 400 }}>
-          ✨ Pergunte qualquer coisa sobre a Bíblia ✨
+          Pergunte qualquer coisa sobre a Bíblia
         </h2>
         <div style={{ position: "relative" }}>
           <textarea
