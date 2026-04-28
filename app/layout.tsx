@@ -38,7 +38,7 @@ export default function RootLayout({
           boxShadow: '0 4px 15px rgba(0,0,0,0.2)', 
           zIndex: 1000, 
           position: 'relative',
-          gap: '15px',
+          gap: '10px',
           overflow: 'hidden' // hidden to prevent SVG overflow
         }}>
           <a href="https://peixeweb.github.io/vendas_pela_internet/" target="_blank" rel="noopener noreferrer" className="header-logo-container" style={{ 
@@ -88,23 +88,22 @@ export default function RootLayout({
             }
             @media (max-width: 600px) {
               .main-header {
-                flex-direction: column !important;
-                gap: 15px !important;
-                padding: 15px 10px !important;
+                padding: 10px 5px !important;
+                gap: 5px !important;
               }
               .header-logo-container {
-                width: 140px !important;
-                height: 140px !important;
+                width: 120px !important;
+                height: 120px !important;
               }
               .header-logo-container img {
-                width: 80px !important;
+                width: 70px !important;
+              }
+              .header-logo-container svg text {
+                font-size: 15px !important;
               }
               .header-impact {
-                transform: scale(0.9);
-                transform-origin: center;
-                width: 100%;
-                display: flex;
-                justify-content: center;
+                transform: scale(0.75);
+                transform-origin: right center;
               }
             }
           `}} />
