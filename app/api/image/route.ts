@@ -73,7 +73,7 @@ const KNOWN_IMAGES: Record<string, string> = {
   'manuscrito':          'https://upload.wikimedia.org/wikipedia/commons/thumb/5/50/Great_Isaiah_Scroll.jpg/400px-Great_Isaiah_Scroll.jpg',
   'pergaminho':          'https://upload.wikimedia.org/wikipedia/commons/thumb/5/50/Great_Isaiah_Scroll.jpg/400px-Great_Isaiah_Scroll.jpg',
   'default':             'https://upload.wikimedia.org/wikipedia/commons/thumb/b/b1/Gutenberg_Bible%2C_Lenox_Copy%2C_New_York_Public_Library%2C_2009._Pic_01.jpg/400px-Gutenberg_Bible%2C_Lenox_Copy%2C_New_York_Public_Library%2C_2009._Pic_01.jpg',
-};
+},
 
 function normalise(s: string): string {
   return s.toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '').trim();
