@@ -85,9 +85,21 @@ function cleanQuery(q: string): string {
 
 function findKnown(query: string): string | null {
   const nq = normalise(cleanQuery(query));
+  
+  // Exact match
   for (const [key, url] of Object.entries(KNOWN_IMAGES)) {
     if (normalise(key) === nq) return url;
   }
+
+  // Substring match (longest first to prioritize "joao batista" over "joao")
+  const sortedKeys = Object.keys(KNOWN_IMAGES).sort((a, b) => b.length - a.length);
+  for (const key of sortedKeys) {
+    if (key === 'default') continue;
+    if (nq.includes(normalise(key))) {
+      return KNOWN_IMAGES[key];
+    }
+  }
+
   return null;
 }
 
@@ -179,46 +191,10 @@ export async function GET(request: NextRequest) {
   // Always fall back to the Bible image
   if (!imageUrl) imageUrl = KNOWN_IMAGES['default'];
 
-  // ── Proxy the image bytes through the server ──
-  // This avoids ALL browser CORS/hotlinking issues on mobile and PC.
-  try {
-    const imgRes = await fetch(imageUrl, {
-      headers: {
-        'User-Agent': 'Mozilla/5.0 (compatible; BibliaAcademica/1.0; +https://biblia.app)',
-        'Accept': 'image/webp,image/apng,image/*,*/*;q=0.8',
-      },
-    });
-
-    if (!imgRes.ok) {
-      // If the specific URL fails, try the default fallback
-      const fallback = await fetch(KNOWN_IMAGES['default'], {
-        headers: { 'User-Agent': 'Mozilla/5.0 (compatible; BibliaAcademica/1.0)' },
-      });
-      if (!fallback.ok) return new NextResponse('Image unavailable', { status: 503 });
-      const buf = await fallback.arrayBuffer();
-      return new NextResponse(buf, {
-        status: 200,
-        headers: {
-          'Content-Type': fallback.headers.get('content-type') || 'image/jpeg',
-          'Cache-Control': 'public, max-age=86400, stale-while-revalidate=3600',
-          'Access-Control-Allow-Origin': '*',
-        },
-      });
-    }
-
-    const buffer = await imgRes.arrayBuffer();
-    const contentType = imgRes.headers.get('content-type') || 'image/jpeg';
-
-    return new NextResponse(buffer, {
-      status: 200,
-      headers: {
-        'Content-Type': contentType,
-        'Cache-Control': 'public, max-age=86400, stale-while-revalidate=3600',
-        'Access-Control-Allow-Origin': '*',
-      },
-    });
-  } catch (err) {
-    console.error('[image] proxy failed:', err);
-    return new NextResponse('Image unavailable', { status: 503 });
-  }
+  // ── Redirect to the image ──
+  // By redirecting instead of proxying the arrayBuffer, we bypass Node.js fetch 
+  // issues (like 400 Bad Request on certain Wikimedia Commons URLs) and avoid 
+  // Next.js binary response bugs. The browser will handle the image request 
+  // directly, which works universally on mobile and PC without CORS issues for <img> tags.
+  return NextResponse.redirect(imageUrl);
 }
