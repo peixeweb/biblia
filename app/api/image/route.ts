@@ -1,78 +1,65 @@
 import { NextRequest, NextResponse } from 'next/server';
 
 // ─── Curated Wikimedia images for biblical/historical figures ─────────────────
+// Note: URLs here should ideally be the final upload.wikimedia.org thumb URLs.
+// If they fail, the system will fallback to dynamic Wikipedia search.
 const KNOWN_IMAGES: Record<string, string> = {
-  'jesus':               'https://commons.wikimedia.org/wiki/Special:FilePath/Giovanni_Bellini,_Christ_Blessing,_1500.jpg?width=500',
-  'jesus cristo':        'https://commons.wikimedia.org/wiki/Special:FilePath/Giovanni_Bellini,_Christ_Blessing,_1500.jpg?width=500',
-  'jesus of nazareth':   'https://commons.wikimedia.org/wiki/Special:FilePath/Giovanni_Bellini,_Christ_Blessing,_1500.jpg?width=500',
-  'moises':              'https://commons.wikimedia.org/wiki/Special:FilePath/Rembrandt_Harmensz._van_Rijn_079.jpg?width=500',
-  'moses':               'https://commons.wikimedia.org/wiki/Special:FilePath/Rembrandt_Harmensz._van_Rijn_079.jpg?width=500',
-  'paulo':               'https://commons.wikimedia.org/wiki/Special:FilePath/Saint_Paul_Rembrandt.jpg?width=500',
-  'paulo de tarso':      'https://commons.wikimedia.org/wiki/Special:FilePath/Saint_Paul_Rembrandt.jpg?width=500',
-  'paul the apostle':    'https://commons.wikimedia.org/wiki/Special:FilePath/Saint_Paul_Rembrandt.jpg?width=500',
-  'maria madalena':      'https://commons.wikimedia.org/wiki/Special:FilePath/Guido_Reni_-_Penitent_Magdalene_-_WGA19309.jpg?width=500',
-  'mary magdalene':      'https://commons.wikimedia.org/wiki/Special:FilePath/Guido_Reni_-_Penitent_Magdalene_-_WGA19309.jpg?width=500',
-  'pedro':               'https://commons.wikimedia.org/wiki/Special:FilePath/El_Greco_-_Saint_Peter_-_Google_Art_Project.jpg?width=500',
-  'sao pedro':           'https://commons.wikimedia.org/wiki/Special:FilePath/El_Greco_-_Saint_Peter_-_Google_Art_Project.jpg?width=500',
-  'peter':               'https://commons.wikimedia.org/wiki/Special:FilePath/El_Greco_-_Saint_Peter_-_Google_Art_Project.jpg?width=500',
-  'saint peter':         'https://commons.wikimedia.org/wiki/Special:FilePath/El_Greco_-_Saint_Peter_-_Google_Art_Project.jpg?width=500',
-  'maria':               'https://commons.wikimedia.org/wiki/Special:FilePath/Sassoferrato_-_Virgin_in_Prayer.jpg?width=500',
-  'virgem maria':        'https://commons.wikimedia.org/wiki/Special:FilePath/Sassoferrato_-_Virgin_in_Prayer.jpg?width=500',
-  'mary':                'https://commons.wikimedia.org/wiki/Special:FilePath/Sassoferrato_-_Virgin_in_Prayer.jpg?width=500',
-  'joao':                'https://commons.wikimedia.org/wiki/Special:FilePath/San_Juan_Evangelista_en_Patmos_%28Vel%C3%A1zquez%29.jpg?width=500',
-  'sao joao':            'https://commons.wikimedia.org/wiki/Special:FilePath/San_Juan_Evangelista_en_Patmos_%28Vel%C3%A1zquez%29.jpg?width=500',
-  'john':                'https://commons.wikimedia.org/wiki/Special:FilePath/San_Juan_Evangelista_en_Patmos_%28Vel%C3%A1zquez%29.jpg?width=500',
-  'mateus':              'https://commons.wikimedia.org/wiki/Special:FilePath/Rembrandt_-_The_Evangelist_Matthew_and_the_Angel_-_WGA19131.jpg?width=500',
-  'matthew':             'https://commons.wikimedia.org/wiki/Special:FilePath/Rembrandt_-_The_Evangelist_Matthew_and_the_Angel_-_WGA19131.jpg?width=500',
-  'marcos':              'https://commons.wikimedia.org/wiki/Special:FilePath/The_Apostle_Mark_by_Tintoretto.jpg?width=500',
-  'mark':                'https://commons.wikimedia.org/wiki/Special:FilePath/The_Apostle_Mark_by_Tintoretto.jpg?width=500',
-  'lucas':               'https://commons.wikimedia.org/wiki/Special:FilePath/Guercino_-_Saint_Luke.jpg?width=500',
-  'luke':                'https://commons.wikimedia.org/wiki/Special:FilePath/Guercino_-_Saint_Luke.jpg?width=500',
-  'judas':               'https://commons.wikimedia.org/wiki/Special:FilePath/Giotto_-_Scrovegni_-_-31-_-_Kiss_of_Judas.jpg?width=500',
-  'abraao':              'https://commons.wikimedia.org/wiki/Special:FilePath/Rembrandt_-_Abraham_and_the_Angels_-_c._1646.jpg?width=500',
-  'abraham':             'https://commons.wikimedia.org/wiki/Special:FilePath/Rembrandt_-_Abraham_and_the_Angels_-_c._1646.jpg?width=500',
-  'davi':                'https://commons.wikimedia.org/wiki/Special:FilePath/%27David%27_by_Michelangelo_Fir_JBU002.jpg?width=500',
-  'david':               'https://commons.wikimedia.org/wiki/Special:FilePath/%27David%27_by_Michelangelo_Fir_JBU002.jpg?width=500',
-  'noe':                 'https://commons.wikimedia.org/wiki/Special:FilePath/Gustave_Dor%C3%A9_-_The_Holy_Bible_-_Plate_I%2C_The_Deluge.jpg?width=500',
-  'noah':                'https://commons.wikimedia.org/wiki/Special:FilePath/Gustave_Dor%C3%A9_-_The_Holy_Bible_-_Plate_I%2C_The_Deluge.jpg?width=500',
-  'elias':               'https://commons.wikimedia.org/wiki/Special:FilePath/The_Prophet_Elijah_in_the_Desert%2C_by_Washington_Allston.jpg?width=500',
-  'elijah':              'https://commons.wikimedia.org/wiki/Special:FilePath/The_Prophet_Elijah_in_the_Desert%2C_by_Washington_Allston.jpg?width=500',
-  'joao batista':        'https://commons.wikimedia.org/wiki/Special:FilePath/Leonardo_da_Vinci_-_Saint_John_the_Baptist_-_Louvre.jpg?width=500',
-  'john the baptist':    'https://commons.wikimedia.org/wiki/Special:FilePath/Leonardo_da_Vinci_-_Saint_John_the_Baptist_-_Louvre.jpg?width=500',
-  'enoque':              'https://commons.wikimedia.org/wiki/Special:FilePath/Tissot_Enoch.jpg?width=500',
-  'enoch':               'https://commons.wikimedia.org/wiki/Special:FilePath/Tissot_Enoch.jpg?width=500',
-  'book of enoch':       'https://commons.wikimedia.org/wiki/Special:FilePath/Tissot_Enoch.jpg?width=500',
-  'livro de enoque':     'https://commons.wikimedia.org/wiki/Special:FilePath/Tissot_Enoch.jpg?width=500',
-  'gospel of thomas':    'https://commons.wikimedia.org/wiki/Special:FilePath/Caravaggio_-_The_Incredulity_of_Saint_Thomas.jpg?width=500',
-  'evangelho de tome':   'https://commons.wikimedia.org/wiki/Special:FilePath/Caravaggio_-_The_Incredulity_of_Saint_Thomas.jpg?width=500',
-  'tomas':               'https://commons.wikimedia.org/wiki/Special:FilePath/Caravaggio_-_The_Incredulity_of_Saint_Thomas.jpg?width=500',
-  'salomao':             'https://commons.wikimedia.org/wiki/Special:FilePath/Guercino_King_Solomon.jpg?width=500',
-  'solomon':             'https://commons.wikimedia.org/wiki/Special:FilePath/Guercino_King_Solomon.jpg?width=500',
-  'jo':                  'https://commons.wikimedia.org/wiki/Special:FilePath/Job_Loubet.jpg?width=500',
-  'job':                 'https://commons.wikimedia.org/wiki/Special:FilePath/Job_Loubet.jpg?width=500',
-  'jeremias':            'https://commons.wikimedia.org/wiki/Special:FilePath/Michelangelo_-_Sistine_Chapel_ceiling_-_Jeremiah.jpg?width=500',
-  'jeremiah':            'https://commons.wikimedia.org/wiki/Special:FilePath/Michelangelo_-_Sistine_Chapel_ceiling_-_Jeremiah.jpg?width=500',
-  'isaias':              'https://commons.wikimedia.org/wiki/Special:FilePath/Michelangelo_Sistine_Chapel_ceiling_Isaiah.jpg?width=500',
-  'isaiah':              'https://commons.wikimedia.org/wiki/Special:FilePath/Michelangelo_Sistine_Chapel_ceiling_Isaiah.jpg?width=500',
-  'tito apostle':        'https://commons.wikimedia.org/wiki/Special:FilePath/St_Titus.jpg?width=500',
-  'tito apostolo':       'https://commons.wikimedia.org/wiki/Special:FilePath/St_Titus.jpg?width=500',
-  'titus apostle':       'https://commons.wikimedia.org/wiki/Special:FilePath/St_Titus.jpg?width=500',
-  'imperador tito':      'https://commons.wikimedia.org/wiki/Special:FilePath/Titus_Bust.jpg?width=500',
-  'emperor titus':       'https://commons.wikimedia.org/wiki/Special:FilePath/Titus_Bust.jpg?width=500',
-  'tito flavio':         'https://commons.wikimedia.org/wiki/Special:FilePath/Titus_Bust.jpg?width=500',
-  'adao':                'https://commons.wikimedia.org/wiki/Special:FilePath/Michelangelo_-_Creation_of_Adam_%28cropped%29.jpg?width=500',
-  'eva':                 'https://commons.wikimedia.org/wiki/Special:FilePath/Jan_Brueghel_the_Elder_-_The_Garden_of_Eden_with_the_Fall_of_Man.jpg?width=500',
-  'isaque':              'https://commons.wikimedia.org/wiki/Special:FilePath/Caravaggio_-_Sacrificio_di_Isacco_-_Uffizi.jpg?width=500',
-  'jaco':                'https://commons.wikimedia.org/wiki/Special:FilePath/Rembrandt_-_Jacob_Wrestling_with_the_Angel_-_Google_Art_Project.jpg?width=500',
-  'jose':                'https://commons.wikimedia.org/wiki/Special:FilePath/Guido_Reni_-_Saint_Joseph_and_the_Christ_Child_-_WGA19293.jpg?width=500',
-  'samuel':              'https://commons.wikimedia.org/wiki/Special:FilePath/Joshua_Reynolds_-_The_Infant_Samuel_-_WGA19349.jpg?width=500',
-  'saul':                'https://commons.wikimedia.org/wiki/Special:FilePath/Rembrandt_-_David_and_Saul.jpg?width=500',
-  'daniel':              'https://commons.wikimedia.org/wiki/Special:FilePath/Peter_Paul_Rubens_-_Daniel_in_the_Lions%27_Den.jpg?width=500',
-  'ester':               'https://commons.wikimedia.org/wiki/Special:FilePath/Edwin_Long_-_Esther.jpg?width=500',
-  'biblia':              'https://commons.wikimedia.org/wiki/Special:FilePath/Gutenberg_Bible%2C_Lenox_Copy%2C_New_York_Public_Library%2C_2009._Pic_01.jpg?width=500',
-  'manuscrito':          'https://commons.wikimedia.org/wiki/Special:FilePath/Great_Isaiah_Scroll.jpg?width=500',
-  'pergaminho':          'https://commons.wikimedia.org/wiki/Special:FilePath/Great_Isaiah_Scroll.jpg?width=500',
-  'default':             'https://commons.wikimedia.org/wiki/Special:FilePath/Gutenberg_Bible%2C_Lenox_Copy%2C_New_York_Public_Library%2C_2009._Pic_01.jpg?width=500',
+  'jesus':               'https://upload.wikimedia.org/wikipedia/commons/thumb/4/4a/Spas_vsederzhitel_sinay.jpg/500px-Spas_vsederzhitel_sinay.jpg',
+  'jesus cristo':        'https://upload.wikimedia.org/wikipedia/commons/thumb/4/4a/Spas_vsederzhitel_sinay.jpg/500px-Spas_vsederzhitel_sinay.jpg',
+  'jesus of nazareth':   'https://upload.wikimedia.org/wikipedia/commons/thumb/3/37/Rembrandt_Harmensz._van_Rijn_079.jpg/500px-Rembrandt_Harmensz._van_Rijn_079.jpg',
+  'moises':              'https://upload.wikimedia.org/wikipedia/commons/thumb/1/14/Sistine_Chapel_ceiling_-_Moses.jpg/500px-Sistine_Chapel_ceiling_-_Moses.jpg',
+  'moses':               'https://upload.wikimedia.org/wikipedia/commons/thumb/1/14/Sistine_Chapel_ceiling_-_Moses.jpg/500px-Sistine_Chapel_ceiling_-_Moses.jpg',
+  'paulo':               'https://upload.wikimedia.org/wikipedia/commons/thumb/7/74/Saint_Paul_Rembrandt.jpg/500px-Saint_Paul_Rembrandt.jpg',
+  'paulo de tarso':      'https://upload.wikimedia.org/wikipedia/commons/thumb/7/74/Saint_Paul_Rembrandt.jpg/500px-Saint_Paul_Rembrandt.jpg',
+  'paul the apostle':    'https://upload.wikimedia.org/wikipedia/commons/thumb/7/74/Saint_Paul_Rembrandt.jpg/500px-Saint_Paul_Rembrandt.jpg',
+  'maria madalena':      'https://upload.wikimedia.org/wikipedia/commons/thumb/1/1e/Guido_Reni_-_Penitent_Magdalene_-_WGA19309.jpg/500px-Guido_Reni_-_Penitent_Magdalene_-_WGA19309.jpg',
+  'mary magdalene':      'https://upload.wikimedia.org/wikipedia/commons/thumb/1/1e/Guido_Reni_-_Penitent_Magdalene_-_WGA19309.jpg/500px-Guido_Reni_-_Penitent_Magdalene_-_WGA19309.jpg',
+  'pedro':               'https://upload.wikimedia.org/wikipedia/commons/thumb/0/07/El_Greco_-_Saint_Peter_-_Google_Art_Project.jpg/500px-El_Greco_-_Saint_Peter_-_Google_Art_Project.jpg',
+  'sao pedro':           'https://upload.wikimedia.org/wikipedia/commons/thumb/0/07/El_Greco_-_Saint_Peter_-_Google_Art_Project.jpg/500px-El_Greco_-_Saint_Peter_-_Google_Art_Project.jpg',
+  'peter':               'https://upload.wikimedia.org/wikipedia/commons/thumb/0/07/El_Greco_-_Saint_Peter_-_Google_Art_Project.jpg/500px-El_Greco_-_Saint_Peter_-_Google_Art_Project.jpg',
+  'saint peter':         'https://upload.wikimedia.org/wikipedia/commons/thumb/0/07/El_Greco_-_Saint_Peter_-_Google_Art_Project.jpg/500px-El_Greco_-_Saint_Peter_-_Google_Art_Project.jpg',
+  'maria':               'https://upload.wikimedia.org/wikipedia/commons/thumb/9/90/Sassoferrato_-_Virgin_in_Prayer.jpg/500px-Sassoferrato_-_Virgin_in_Prayer.jpg',
+  'virgem maria':        'https://upload.wikimedia.org/wikipedia/commons/thumb/9/90/Sassoferrato_-_Virgin_in_Prayer.jpg/500px-Sassoferrato_-_Virgin_in_Prayer.jpg',
+  'mary':                'https://upload.wikimedia.org/wikipedia/commons/thumb/9/90/Sassoferrato_-_Virgin_in_Prayer.jpg/500px-Sassoferrato_-_Virgin_in_Prayer.jpg',
+  'joao':                'https://upload.wikimedia.org/wikipedia/commons/thumb/c/cd/San_Juan_Evangelista_en_Patmos_%28Vel%C3%A1zquez%29.jpg/500px-San_Juan_Evangelista_en_Patmos_%28Vel%C3%A1zquez%29.jpg',
+  'sao joao':            'https://upload.wikimedia.org/wikipedia/commons/thumb/c/cd/San_Juan_Evangelista_en_Patmos_%28Vel%C3%A1zquez%29.jpg/500px-San_Juan_Evangelista_en_Patmos_%28Vel%C3%A1zquez%29.jpg',
+  'john':                'https://upload.wikimedia.org/wikipedia/commons/thumb/c/cd/San_Juan_Evangelista_en_Patmos_%28Vel%C3%A1zquez%29.jpg/500px-San_Juan_Evangelista_en_Patmos_%28Vel%C3%A1zquez%29.jpg',
+  'mateus':              'https://upload.wikimedia.org/wikipedia/commons/thumb/8/87/Rembrandt_-_The_Evangelist_Matthew_and_the_Angel_-_WGA19131.jpg/500px-Rembrandt_-_The_Evangelist_Matthew_and_the_Angel_-_WGA19131.jpg',
+  'matthew':             'https://upload.wikimedia.org/wikipedia/commons/thumb/8/87/Rembrandt_-_The_Evangelist_Matthew_and_the_Angel_-_WGA19131.jpg/500px-Rembrandt_-_The_Evangelist_Matthew_and_the_Angel_-_WGA19131.jpg',
+  'marcos':              'https://upload.wikimedia.org/wikipedia/commons/thumb/3/36/The_Apostle_Mark_by_Tintoretto.jpg/500px-The_Apostle_Mark_by_Tintoretto.jpg',
+  'mark':                'https://upload.wikimedia.org/wikipedia/commons/thumb/3/36/The_Apostle_Mark_by_Tintoretto.jpg/500px-The_Apostle_Mark_by_Tintoretto.jpg',
+  'lucas':               'https://upload.wikimedia.org/wikipedia/commons/thumb/0/02/Guercino_-_Saint_Luke.jpg/500px-Guercino_-_Saint_Luke.jpg',
+  'luke':                'https://upload.wikimedia.org/wikipedia/commons/thumb/0/02/Guercino_-_Saint_Luke.jpg/500px-Guercino_-_Saint_Luke.jpg',
+  'judas':               'https://upload.wikimedia.org/wikipedia/commons/thumb/3/37/Giotto_-_Scrovegni_-_-31-_-_Kiss_of_Judas.jpg/500px-Giotto_-_Scrovegni_-_-31-_-_Kiss_of_Judas.jpg',
+  'abraao':              'https://upload.wikimedia.org/wikipedia/commons/thumb/3/37/Rembrandt_-_Abraham_and_the_Angels_-_c._1646.jpg/500px-Rembrandt_-_Abraham_and_the_Angels_-_c._1646.jpg',
+  'abraham':             'https://upload.wikimedia.org/wikipedia/commons/thumb/3/37/Rembrandt_-_Abraham_and_the_Angels_-_c._1646.jpg/500px-Rembrandt_-_Abraham_and_the_Angels_-_c._1646.jpg',
+  'davi':                'https://upload.wikimedia.org/wikipedia/commons/thumb/a/a0/%27David%27_by_Michelangelo_Fir_JBU002.jpg/500px-%27David%27_by_Michelangelo_Fir_JBU002.jpg',
+  'david':               'https://upload.wikimedia.org/wikipedia/commons/thumb/a/a0/%27David%27_by_Michelangelo_Fir_JBU002.jpg/500px-%27David%27_by_Michelangelo_Fir_JBU002.jpg',
+  'noe':                 'https://upload.wikimedia.org/wikipedia/commons/thumb/7/7a/Gustave_Dor%C3%A9_-_The_Holy_Bible_-_Plate_I%2C_The_Deluge.jpg/500px-Gustave_Dor%C3%A9_-_The_Holy_Bible_-_Plate_I%2C_The_Deluge.jpg',
+  'noah':                'https://upload.wikimedia.org/wikipedia/commons/thumb/7/7a/Gustave_Dor%C3%A9_-_The_Holy_Bible_-_Plate_I%2C_The_Deluge.jpg/500px-Gustave_Dor%C3%A9_-_The_Holy_Bible_-_Plate_I%2C_The_Deluge.jpg',
+  'elias':               'https://upload.wikimedia.org/wikipedia/commons/thumb/6/6c/The_Prophet_Elijah_in_the_Desert%2C_by_Washington_Allston.jpg/500px-The_Prophet_Elijah_in_the_Desert%2C_by_Washington_Allston.jpg',
+  'elijah':              'https://upload.wikimedia.org/wikipedia/commons/thumb/6/6c/The_Prophet_Elijah_in_the_Desert%2C_by_Washington_Allston.jpg/500px-The_Prophet_Elijah_in_the_Desert%2C_by_Washington_Allston.jpg',
+  'joao batista':        'https://upload.wikimedia.org/wikipedia/commons/thumb/c/c9/Leonardo_da_Vinci_-_Saint_John_the_Baptist_-_Louvre.jpg/500px-Leonardo_da_Vinci_-_Saint_John_the_Baptist_-_Louvre.jpg',
+  'john the baptist':    'https://upload.wikimedia.org/wikipedia/commons/thumb/c/c9/Leonardo_da_Vinci_-_Saint_John_the_Baptist_-_Louvre.jpg/500px-Leonardo_da_Vinci_-_Saint_John_the_Baptist_-_Louvre.jpg',
+  'enoque':              'https://upload.wikimedia.org/wikipedia/commons/thumb/8/82/Tissot_Enoch.jpg/500px-Tissot_Enoch.jpg',
+  'enoch':               'https://upload.wikimedia.org/wikipedia/commons/thumb/8/82/Tissot_Enoch.jpg/500px-Tissot_Enoch.jpg',
+  'book of enoch':       'https://upload.wikimedia.org/wikipedia/commons/thumb/8/82/Tissot_Enoch.jpg/500px-Tissot_Enoch.jpg',
+  'livro de enoque':     'https://upload.wikimedia.org/wikipedia/commons/thumb/8/82/Tissot_Enoch.jpg/500px-Tissot_Enoch.jpg',
+  'salomao':             'https://upload.wikimedia.org/wikipedia/commons/thumb/5/57/Guercino_King_Solomon.jpg/500px-Guercino_King_Solomon.jpg',
+  'solomon':             'https://upload.wikimedia.org/wikipedia/commons/thumb/5/57/Guercino_King_Solomon.jpg/500px-Guercino_King_Solomon.jpg',
+  'jo':                  'https://upload.wikimedia.org/wikipedia/commons/thumb/4/46/Job_Loubet.jpg/500px-Job_Loubet.jpg',
+  'job':                 'https://upload.wikimedia.org/wikipedia/commons/thumb/4/46/Job_Loubet.jpg/500px-Job_Loubet.jpg',
+  'jeremias':            'https://upload.wikimedia.org/wikipedia/commons/thumb/1/14/Michelangelo_-_Sistine_Chapel_ceiling_-_Jeremiah.jpg/500px-Michelangelo_-_Sistine_Chapel_ceiling_-_Jeremiah.jpg',
+  'jeremiah':            'https://upload.wikimedia.org/wikipedia/commons/thumb/1/14/Michelangelo_-_Sistine_Chapel_ceiling_-_Jeremiah.jpg/500px-Michelangelo_-_Sistine_Chapel_ceiling_-_Jeremiah.jpg',
+  'isaias':              'https://upload.wikimedia.org/wikipedia/commons/thumb/4/4b/Michelangelo_Sistine_Chapel_ceiling_Isaiah.jpg/500px-Michelangelo_Sistine_Chapel_ceiling_Isaiah.jpg',
+  'isaiah':              'https://upload.wikimedia.org/wikipedia/commons/thumb/4/4b/Michelangelo_Sistine_Chapel_ceiling_Isaiah.jpg/500px-Michelangelo_Sistine_Chapel_ceiling_Isaiah.jpg',
+  'adao':                'https://upload.wikimedia.org/wikipedia/commons/thumb/f/f2/Jan_Brueghel_the_Elder_-_The_Garden_of_Eden_with_the_Fall_of_Man.jpg/500px-Jan_Brueghel_the_Elder_-_The_Garden_of_Eden_with_the_Fall_of_Man.jpg',
+  'eva':                 'https://upload.wikimedia.org/wikipedia/commons/thumb/f/f2/Jan_Brueghel_the_Elder_-_The_Garden_of_Eden_with_the_Fall_of_Man.jpg/500px-Jan_Brueghel_the_Elder_-_The_Garden_of_Eden_with_the_Fall_of_Man.jpg',
+  'samuel':              'https://upload.wikimedia.org/wikipedia/commons/thumb/2/2a/Joshua_Reynolds_-_The_Infant_Samuel_-_WGA19349.jpg/500px-Joshua_Reynolds_-_The_Infant_Samuel_-_WGA19349.jpg',
+  'daniel':              'https://upload.wikimedia.org/wikipedia/commons/thumb/f/fb/Peter_Paul_Rubens_-_Daniel_in_the_Lions%27_Den.jpg/500px-Peter_Paul_Rubens_-_Daniel_in_the_Lions%27_Den.jpg',
+  'ester':               'https://upload.wikimedia.org/wikipedia/commons/thumb/b/b1/Gutenberg_Bible%2C_Lenox_Copy%2C_New_York_Public_Library%2C_2009._Pic_01.jpg/500px-Gutenberg_Bible%2C_Lenox_Copy%2C_New_York_Public_Library%2C_2009._Pic_01.jpg',
+  'biblia':              'https://upload.wikimedia.org/wikipedia/commons/thumb/b/b1/Gutenberg_Bible%2C_Lenox_Copy%2C_New_York_Public_Library%2C_2009._Pic_01.jpg/500px-Gutenberg_Bible%2C_Lenox_Copy%2C_New_York_Public_Library%2C_2009._Pic_01.jpg',
+  'default':             'https://upload.wikimedia.org/wikipedia/commons/thumb/b/b1/Gutenberg_Bible%2C_Lenox_Copy%2C_New_York_Public_Library%2C_2009._Pic_01.jpg/500px-Gutenberg_Bible%2C_Lenox_Copy%2C_New_York_Public_Library%2C_2009._Pic_01.jpg',
 };
 
 function normalise(s: string): string {
@@ -103,10 +90,12 @@ function findKnown(query: string): string | null {
   return null;
 }
 
+const BROWSER_UA = 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36';
+
 async function fetchWikipediaThumb(title: string, lang: 'pt' | 'en'): Promise<string | null> {
   const url = `https://${lang}.wikipedia.org/w/api.php?action=query&titles=${encodeURIComponent(title)}&prop=pageimages&pithumbsize=500&format=json&origin=*`;
   try {
-    const res = await fetch(url, { headers: { 'User-Agent': 'BibliaAcademica/1.0' } });
+    const res = await fetch(url, { headers: { 'User-Agent': BROWSER_UA } });
     if (!res.ok) return null;
     const data = await res.json();
     const pages = data?.query?.pages;
@@ -122,7 +111,7 @@ async function fetchWikipediaThumb(title: string, lang: 'pt' | 'en'): Promise<st
 async function searchWikipedia(query: string, lang: 'pt' | 'en'): Promise<string | null> {
   const url = `https://${lang}.wikipedia.org/w/api.php?action=opensearch&search=${encodeURIComponent(query)}&limit=2&format=json&origin=*`;
   try {
-    const res = await fetch(url, { headers: { 'User-Agent': 'BibliaAcademica/1.0' } });
+    const res = await fetch(url, { headers: { 'User-Agent': BROWSER_UA } });
     if (!res.ok) return null;
     const data = await res.json();
     const titles: string[] = data?.[1] || [];
@@ -137,10 +126,9 @@ async function searchWikipedia(query: string, lang: 'pt' | 'en'): Promise<string
 async function fetchUnsplash(query: string): Promise<string | null> {
   const accessKey = process.env.UNSPLASH_ACCESS_KEY;
   if (!accessKey) return null;
-  // Unsplash search API
   const url = `https://api.unsplash.com/search/photos?query=${encodeURIComponent(query)}&client_id=${accessKey}&per_page=1&orientation=landscape`;
   try {
-    const res = await fetch(url, { headers: { 'User-Agent': 'BibliaAcademica/1.0' } });
+    const res = await fetch(url, { headers: { 'User-Agent': BROWSER_UA } });
     if (!res.ok) return null;
     const data = await res.json();
     if (data && data.results && data.results.length > 0) {
@@ -150,7 +138,22 @@ async function fetchUnsplash(query: string): Promise<string | null> {
   return null;
 }
 
-// ─── Route — returns image bytes directly (no base64, no CORS issues) ─────────
+async function getImageBuffer(url: string) {
+  try {
+    const response = await fetch(url, {
+      headers: { 'User-Agent': BROWSER_UA },
+      next: { revalidate: 3600 } // Cache for 1 hour
+    });
+    if (!response.ok) return null;
+    const buffer = await response.arrayBuffer();
+    const contentType = response.headers.get('content-type') || 'image/jpeg';
+    return { buffer, contentType };
+  } catch {
+    return null;
+  }
+}
+
+// ─── Route — returns image bytes directly (proxy mode) ─────────
 export async function GET(request: NextRequest) {
   const { searchParams } = new URL(request.url);
   const query = (searchParams.get('q') || '').trim();
@@ -159,10 +162,8 @@ export async function GET(request: NextRequest) {
     return new NextResponse('Query required', { status: 400 });
   }
 
-  // ── Find the best image URL ──
-  let imageUrl: string | null = null;
-
-  imageUrl = findKnown(query);
+  // 1. Find the best image URL
+  let imageUrl: string | null = findKnown(query);
 
   if (!imageUrl) imageUrl = await fetchWikipediaThumb(query + ' (Bíblia)', 'pt');
   if (!imageUrl) imageUrl = await searchWikipedia(query + ' personagem bíblico', 'pt');
@@ -170,11 +171,7 @@ export async function GET(request: NextRequest) {
   if (!imageUrl) imageUrl = await searchWikipedia(query + ' (profeta)', 'pt');
   if (!imageUrl) imageUrl = await fetchWikipediaThumb(query + ' (Bible)', 'en');
   if (!imageUrl) imageUrl = await searchWikipedia(query + ' biblical figure', 'en');
-  if (!imageUrl) imageUrl = await searchWikipedia(query + ' (apostle)', 'en');
-  if (!imageUrl) imageUrl = await searchWikipedia(query + ' (prophet)', 'en');
   if (!imageUrl) imageUrl = await searchWikipedia(query + ' ancient history', 'en');
-
-  // Unsplash Fallback
   if (!imageUrl) imageUrl = await fetchUnsplash(query + ' bible');
   if (!imageUrl) imageUrl = await fetchUnsplash(query + ' religion');
 
@@ -188,13 +185,31 @@ export async function GET(request: NextRequest) {
     }
   }
 
-  // Always fall back to the Bible image
+  // Default fallback
   if (!imageUrl) imageUrl = KNOWN_IMAGES['default'];
 
-  // ── Redirect to the image ──
-  // By redirecting instead of proxying the arrayBuffer, we bypass Node.js fetch 
-  // issues (like 400 Bad Request on certain Wikimedia Commons URLs) and avoid 
-  // Next.js binary response bugs. The browser will handle the image request 
-  // directly, which works universally on mobile and PC without CORS issues for <img> tags.
-  return NextResponse.redirect(imageUrl);
+  // 2. Proxy the image
+  let imgData = await getImageBuffer(imageUrl);
+
+  // If the specific URL failed, try dynamic search for the raw query as a last resort
+  if (!imgData) {
+    const fallbackUrl = await searchWikipedia(query, 'pt') || await searchWikipedia(query, 'en');
+    if (fallbackUrl) imgData = await getImageBuffer(fallbackUrl);
+  }
+
+  // Final fallback to a very stable URL if everything else failed
+  if (!imgData) {
+    imgData = await getImageBuffer(KNOWN_IMAGES['default']);
+  }
+
+  if (!imgData) {
+    return new NextResponse('Image not found', { status: 404 });
+  }
+
+  return new NextResponse(imgData.buffer, {
+    headers: {
+      'Content-Type': imgData.contentType,
+      'Cache-Control': 'public, max-age=3600, s-maxage=3600, stale-while-revalidate=86400',
+    },
+  });
 }
