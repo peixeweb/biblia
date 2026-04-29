@@ -85,7 +85,7 @@ function VerseCard({ verse }: { verse: Verse }) {
   const [expanded, setExpanded] = useState(false);
   const versionKeys = verse.versions ? Object.keys(verse.versions) : [];
   const hasVersions = versionKeys.length > 0;
-  const primaryText = verse.versions?.["ARA"] || verse.versions?.["NVI"] || verse.text;
+  const primaryText = verse.versions?.["ARA"] || verse.versions?.["NVI"] || verse.text || verse.apocryphalText;
 
   return (
     <div style={{
@@ -189,8 +189,8 @@ function VerseCard({ verse }: { verse: Verse }) {
         </div>
       )}
 
-      {/* If only one version or not expanded, show apocryphal text always */}
-      {!expanded && verse.apocryphalText && (
+      {/* If only one version or not expanded, show apocryphal text in a special box ONLY if not already shown as primary text */}
+      {!expanded && verse.apocryphalText && verse.apocryphalText !== primaryText && (
         <div style={{
           marginTop: "8px", padding: "8px 12px", borderRadius: "8px",
           background: "#fff5f5", borderLeft: "3px solid #8b0000"
@@ -541,9 +541,9 @@ export default function Home() {
             </SectionBlock>
           )}
 
-          {/* 4. Related Verses */}
+          {/* 4. Related Verses & Apocrypha */}
           {result.relatedVerses && result.relatedVerses.length > 0 && (
-            <SectionBlock title="📜 Versículos Relacionados — Múltiplas Versões">
+            <SectionBlock title="📜 Versículos e Fontes Apócrifas">
               {result.relatedVerses.map((v, i) => (
                 <VerseCard key={i} verse={v} />
               ))}
