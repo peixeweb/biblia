@@ -214,10 +214,8 @@ export async function GET(request: NextRequest) {
     const words = stripped.split(/[\s,]+/).filter(Boolean);
     const simpleQuery = words.length > 1 ? words[0] : stripped;
     if (simpleQuery !== stripped && simpleQuery.length > 2) {
-      imageUrl = await searchWikipedia(simpleQuery + ' (Bíblia)', 'pt')
-        || await searchWikipedia(simpleQuery + ' bíblico', 'pt')
-        || await fetchWikipediaThumb(simpleQuery, 'pt')
-        || await searchWikipedia(simpleQuery + ' (Bible)', 'en')
+      // Use fetchWikipediaThumb directly - more reliable than opensearch
+      imageUrl = await fetchWikipediaThumb(simpleQuery, 'pt')
         || await fetchWikipediaThumb(simpleQuery, 'en');
     }
   }
