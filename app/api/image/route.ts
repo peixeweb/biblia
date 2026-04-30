@@ -242,7 +242,10 @@ export async function GET(request: NextRequest) {
     imgData = await getImageBuffer(KNOWN_IMAGES['default']);
   }
 
-  if (!imgData) return new NextResponse('Not found', { status: 404 });
+  if (!imgData) return new NextResponse('Not found', {
+  status: 404,
+  headers: { 'Cache-Control': 'no-cache, no-store, must-revalidate' }
+});
 
   return new NextResponse(imgData.buffer, {
     headers: {
