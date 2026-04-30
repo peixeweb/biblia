@@ -175,12 +175,13 @@ async function getImageBuffer(url: string) {
   try {
     const response = await fetch(url, {
       headers: { 'User-Agent': BROWSER_UA },
-      next: { revalidate: 86400 } // Cache for 24 hours
+      cache: 'force-cache'
     });
     if (!response.ok) return null;
-    const buffer = await response.arrayBuffer();
+    const arrayBuffer = await response.arrayBuffer();
+    const uint8Array = new Uint8Array(arrayBuffer);
     const contentType = response.headers.get('content-type') || 'image/jpeg';
-    return { buffer, contentType };
+    return { buffer: uint8Array, contentType };
   } catch {
     return null;
   }
@@ -206,6 +207,19 @@ export async function GET(request: NextRequest) {
       || await fetchWikipediaThumb(effectiveQuery, 'pt')
       || await searchWikipedia(effectiveQuery + ' (Bible)', 'en')
       || await fetchWikipediaThumb(effectiveQuery, 'en');
+  }
+
+  // 2b. Fallback: if query has extra words like "Renaissance painting", try just the main subject
+  if (!imageUrl) {
+    const words = stripped.split(/[\s,]+/).filter(Boolean);
+    const simpleQuery = words.length > 1 ? words[0] : stripped;
+    if (simpleQuery !== stripped && simpleQuery.length > 2) {
+      imageUrl = await searchWikipedia(simpleQuery + ' (Bíblia)', 'pt')
+        || await searchWikipedia(simpleQuery + ' bíblico', 'pt')
+        || await fetchWikipediaThumb(simpleQuery, 'pt')
+        || await searchWikipedia(simpleQuery + ' (Bible)', 'en')
+        || await fetchWikipediaThumb(simpleQuery, 'en');
+    }
   }
 
   // 3. Unsplash Fallback
