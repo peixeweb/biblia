@@ -234,11 +234,11 @@ export async function GET(request: NextRequest) {
       || await searchUnsplash(simpleQuery + ' bible');
   }
 
-  // 4. Default
-  if (!imageUrl) imageUrl = KNOWN_IMAGES['default'];
+  // 4. Default - buscar da Wikipedia dinamicamente (URLs do KNOWN_IMAGES estão quebradas)
+  if (!imageUrl) imageUrl = await fetchWikipediaThumb('Bíblia', 'pt') || await fetchWikipediaThumb('Bible', 'en');
 
   // Proxy the image
-  let imgData = await getImageBuffer(imageUrl);
+  let imgData = imageUrl ? await getImageBuffer(imageUrl) : null;
   
   if (!imgData) {
     // Last ditch effort: direct search without context
@@ -247,7 +247,8 @@ export async function GET(request: NextRequest) {
   }
 
   if (!imgData) {
-    imgData = await getImageBuffer(KNOWN_IMAGES['default']);
+    const defaultImg = await fetchWikipediaThumb('Bíblia', 'pt') || await fetchWikipediaThumb('Bible', 'en');
+    if (defaultImg) imgData = await getImageBuffer(defaultImg);
   }
 
   if (!imgData) return new NextResponse('Not found', {
