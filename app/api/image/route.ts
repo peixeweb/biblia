@@ -216,14 +216,22 @@ export async function GET(request: NextRequest) {
     if (simpleQuery !== stripped && simpleQuery.length > 2) {
       // Use fetchWikipediaThumb directly - more reliable than opensearch
       imageUrl = await fetchWikipediaThumb(simpleQuery, 'pt')
-        || await fetchWikipediaThumb(simpleQuery, 'en');
+        || await fetchWikipediaThumb(simpleQuery, 'en')
+        // Also try Unsplash with simple query
+        || await searchUnsplash(simpleQuery + ' bible')
+        || await searchUnsplash(simpleQuery + ' jesus');
     }
   }
 
-  // 3. Unsplash Fallback
+  // 3. Unsplash Fallback (with simple query fallback)
   if (!imageUrl) {
-    imageUrl = await searchUnsplash(stripped + ' biblical painting')
-      || await searchUnsplash(stripped + ' religion');
+    const words = stripped.split(/[\s,]+/).filter(Boolean);
+    const simpleQuery = words.length > 1 ? words[0] : stripped;
+    imageUrl = await searchUnsplash(stripped + ' biblical')
+      || await searchUnsplash(stripped + ' religion')
+      || await searchUnsplash(simpleQuery + ' biblical')
+      || await searchUnsplash(simpleQuery + ' jesus')
+      || await searchUnsplash(simpleQuery + ' bible');
   }
 
   // 4. Default
