@@ -130,7 +130,7 @@ function findKnown(query: string): string | null {
 async function fetchWikipediaThumb(title: string, lang: 'pt' | 'en'): Promise<string | null> {
   const url = `https://${lang}.wikipedia.org/w/api.php?action=query&titles=${encodeURIComponent(title)}&prop=pageimages&pithumbsize=600&format=json&origin=*`;
   try {
-    const res = await fetch(url, { headers: { 'User-Agent': BROWSER_UA }, signal: AbortSignal.timeout(5000) });
+    const res = await fetch(url, { headers: { 'User-Agent': BROWSER_UA }, signal: AbortSignal.timeout(15000) });
     if (!res.ok) return null;
     const data = await res.json();
     const pages = data?.query?.pages;
@@ -146,7 +146,7 @@ async function fetchWikipediaThumb(title: string, lang: 'pt' | 'en'): Promise<st
 async function searchWikipedia(query: string, lang: 'pt' | 'en'): Promise<string | null> {
   const url = `https://${lang}.wikipedia.org/w/api.php?action=opensearch&search=${encodeURIComponent(query)}&limit=3&format=json&origin=*`;
   try {
-    const res = await fetch(url, { headers: { 'User-Agent': BROWSER_UA }, signal: AbortSignal.timeout(5000) });
+    const res = await fetch(url, { headers: { 'User-Agent': BROWSER_UA }, signal: AbortSignal.timeout(15000) });
     if (!res.ok) return null;
     const data = await res.json();
     const titles: string[] = data?.[1] || [];
@@ -163,7 +163,7 @@ async function searchUnsplash(query: string): Promise<string | null> {
   if (!accessKey) return null;
   const url = `https://api.unsplash.com/search/photos?query=${encodeURIComponent(query)}&client_id=${accessKey}&per_page=1&orientation=landscape`;
   try {
-    const res = await fetch(url, { headers: { 'User-Agent': BROWSER_UA }, signal: AbortSignal.timeout(5000) });
+    const res = await fetch(url, { headers: { 'User-Agent': BROWSER_UA }, signal: AbortSignal.timeout(15000) });
     if (!res.ok) return null;
     const data = await res.json();
     if (data?.results?.[0]?.urls?.regular) return data.results[0].urls.regular;
